@@ -1,6 +1,7 @@
 const storage = require('../../utils/storage');
 const mock = require('../../utils/mock');
 const scorer = require('../../utils/scorer');
+const cloud = require('../../utils/cloud');
 
 function getTimeSlot() {
   const hour = new Date().getHours();
@@ -10,6 +11,16 @@ function getTimeSlot() {
   return '夜宵';
 }
 
+function getLocation() {
+  return new Promise((resolve, reject) => {
+    wx.getLocation({
+      type: 'gcj02',
+      success: (res) => resolve({ lat: res.latitude, lng: res.longitude }),
+      fail: (err) => reject(err)
+    });
+  });
+}
+
 Page({
   data: {
     city: '未定位',
@@ -17,20 +28,23 @@ Page({
     radiusOptions: [1, 2],
     radiusKm: 1,
     cards: [],
-    loading: false
+    loading: false,
+    source: 'mock'
   },
 
-  onShow() {
+  async onShow() {
     const profile = storage.getProfile();
     if (!profile.hasOnboarded) {
       wx.redirectTo({ url: '/pages/onboarding/index' });
       return;
     }
+
     this.setData({
       city: profile.city || '未定位',
       radiusKm: profile.radiusKm || 1
     });
-    this.generateCards();
+
+    await this.generateCards();
   },
 
   onRadiusChange(e) {
@@ -43,13 +57,60 @@ Page({
     this.generateCards();
   },
 
-  generateCards() {
+  async fetchNearbyPlaces(profile) {
+    // 优先：云函数 + 腾讯地图；失败则本地 mock 兜底
+    try {
+      let loc = profile.lastLocation;
+      if (!loc) {
+        loc = await getLocation();
+        profile.lastLocation = loc;
+        storage.setProfile(profile);
+      }
+
+      const searchRes = await cloud.searchNearby({
+        lat: loc.lat,
+        lng: loc.lng,
+        radiusKm: profile.radiusKm,
+        keyword: '餐饮'
+      });
+
+      const places = (searchRes && searchRes.data) || [];
+      if (places.length > 0) {
+        return { places, source: 'cloud' };
+      }
+    } catch (err) {
+      console.warn('cloud search failed, fallback to mock', err);
+    }
+
+    return {
+      places: mock.getNearbyPlaces(profile.radiusKm),
+      source: 'mock'
+    };
+  },
+
+  async generateCards() {
     this.setData({ loading: true });
+
     const profile = storage.getProfile();
     const logs = storage.getLogs();
-    const nearby = mock.getNearbyPlaces(profile.radiusKm);
-    const cards = scorer.recommendTop3(nearby, profile, logs);
-    this.setData({ cards, loading: false });
+    const { places, source } = await this.fetchNearbyPlaces(profile);
+
+    let cards = [];
+
+    if (source === 'cloud' && cloud.hasCloud()) {
+      try {
+        const recRes = await cloud.recommend({ places, profile, logs });
+        cards = (recRes && recRes.data) || [];
+      } catch (err) {
+        console.warn('cloud recommend failed, fallback local scorer', err);
+      }
+    }
+
+    if (!cards.length) {
+      cards = scorer.recommendTop3(places, profile, logs);
+    }
+
+    this.setData({ cards, source, loading: false });
   },
 
   refreshCards() {
@@ -79,15 +140,19 @@ Page({
     profile.tasteWeights = weights;
     storage.setProfile(profile);
 
-    storage.setSelected({ ...item, ts: Date.now() });
-    storage.appendLog({
+    const log = {
       ts: Date.now(),
       action,
       placeId: item.id,
       placeName: item.name,
       tags: item.tags,
       radiusKm: profile.radiusKm
-    });
+    };
+
+    storage.setSelected({ ...item, ts: Date.now() });
+    storage.appendLog(log);
+
+    cloud.feedback(log).catch(() => {});
 
     wx.navigateTo({ url: '/pages/result/index' });
   },
@@ -105,14 +170,17 @@ Page({
     profile.tasteWeights = weights;
     storage.setProfile(profile);
 
-    storage.appendLog({
+    const log = {
       ts: Date.now(),
       action: 'reject',
       placeId: item.id,
       placeName: item.name,
       tags: item.tags,
       radiusKm: profile.radiusKm
-    });
+    };
+
+    storage.appendLog(log);
+    cloud.feedback(log).catch(() => {});
 
     wx.showToast({ title: '已记住偏好', icon: 'none' });
     this.generateCards();

@@ -22,7 +22,8 @@ const defaultProfile = {
     川菜: 0,
     日料: 0
   },
-  city: '未定位'
+  city: '未定位',
+  lastLocation: null
 };
 
 function ensureDefaults() {

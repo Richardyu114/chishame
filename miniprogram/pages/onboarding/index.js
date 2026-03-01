@@ -8,7 +8,8 @@ Page({
     allTabooTags: ['生冷', '海鲜', '牛肉', '乳糖', '重油'],
     tasteTags: ['米饭', '面食'],
     tabooTags: [],
-    city: '未定位'
+    city: '未定位',
+    lastLocation: null
   },
 
   onLoad() {
@@ -18,15 +19,23 @@ Page({
       budgetMax: profile.budgetMax,
       tasteTags: profile.tasteTags || [],
       tabooTags: profile.tabooTags || [],
-      city: profile.city || '未定位'
+      city: profile.city || '未定位',
+      lastLocation: profile.lastLocation || null
     });
   },
 
   requestLocation() {
     wx.getLocation({
       type: 'gcj02',
-      success: () => {
-        this.setData({ city: '定位成功' });
+      success: (res) => {
+        const city = `定位成功(${res.latitude.toFixed(4)}, ${res.longitude.toFixed(4)})`;
+        this.setData({
+          city,
+          lastLocation: {
+            lat: res.latitude,
+            lng: res.longitude
+          }
+        });
         wx.showToast({ title: '定位成功', icon: 'success' });
       },
       fail: () => {
@@ -77,6 +86,7 @@ Page({
       tasteTags: this.data.tasteTags,
       tabooTags: this.data.tabooTags,
       city: this.data.city,
+      lastLocation: this.data.lastLocation,
       radiusKm: 1,
       maxRadiusKm: 2,
       dineInOnly: true
