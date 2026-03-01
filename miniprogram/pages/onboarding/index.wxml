@@ -1,0 +1,44 @@
+<view class="container">
+  <view class="card">
+    <view class="title">吃啥么</view>
+    <view class="subtitle">10秒决定去哪家吃（只做到店）</view>
+  </view>
+
+  <view class="card">
+    <view class="row">
+      <text>当前定位状态</text>
+      <text class="muted">{{city}}</text>
+    </view>
+    <view style="margin-top: 18rpx;">
+      <button class="btn-primary" bindtap="requestLocation">开启定位</button>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="title" style="font-size: 32rpx;">预算设置</view>
+    <view class="subtitle">最小预算（元）</view>
+    <slider min="10" max="200" step="5" show-value value="{{budgetMin}}" bindchange="onBudgetMinChange" />
+    <view class="subtitle">最大预算（元）</view>
+    <slider min="20" max="300" step="5" show-value value="{{budgetMax}}" bindchange="onBudgetMaxChange" />
+  </view>
+
+  <view class="card">
+    <view class="title" style="font-size: 32rpx;">口味偏好</view>
+    <view style="margin-top: 16rpx;">
+      <block wx:for="{{allTasteTags}}" wx:key="*this">
+        <text class="tag {{tasteTags.indexOf(item) >= 0 ? 'active' : ''}}" data-tag="{{item}}" bindtap="toggleTaste">{{item}}</text>
+      </block>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="title" style="font-size: 32rpx;">忌口（可选）</view>
+    <view style="margin-top: 16rpx;">
+      <block wx:for="{{allTabooTags}}" wx:key="*this">
+        <text class="tag {{tabooTags.indexOf(item) >= 0 ? 'active' : ''}}" data-tag="{{item}}" bindtap="toggleTaboo">{{item}}</text>
+      </block>
+    </view>
+  </view>
+
+  <button class="btn-primary" bindtap="saveAndStart">完成，开始推荐</button>
+</view>

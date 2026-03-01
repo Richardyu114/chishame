@@ -1,0 +1,31 @@
+{
+  "pages": [
+    "pages/onboarding/index",
+    "pages/recommend/index",
+    "pages/result/index",
+    "pages/profile/index"
+  ],
+  "window": {
+    "navigationBarTitleText": "吃啥么",
+    "navigationBarBackgroundColor": "#FFF8EF",
+    "navigationBarTextStyle": "black",
+    "backgroundTextStyle": "light"
+  },
+  "tabBar": {
+    "color": "#6b7280",
+    "selectedColor": "#f97316",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/recommend/index",
+        "text": "推荐"
+      },
+      {
+        "pagePath": "pages/profile/index",
+        "text": "我的"
+      }
+    ]
+  },
+  "sitemapLocation": "sitemap.json"
+}

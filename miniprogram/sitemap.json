@@ -1,0 +1,9 @@
+{
+  "desc": "吃啥么 sitemap",
+  "rules": [
+    {
+      "action": "allow",
+      "page": "*"
+    }
+  ]
+}

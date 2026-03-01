@@ -1,0 +1,43 @@
+<view class="container">
+  <view class="card">
+    <view class="row">
+      <view>
+        <view class="title" style="font-size: 32rpx;">{{city}} · {{timeSlot}}</view>
+        <view class="subtitle">默认1km，最远2km · 到店吃</view>
+      </view>
+      <picker mode="selector" range="{{radiusOptions}}" bindchange="onRadiusChange">
+        <view class="btn-secondary">半径 {{radiusKm}}km</view>
+      </picker>
+    </view>
+  </view>
+
+  <view wx:if="{{loading}}" class="card">
+    <text class="muted">正在生成推荐...</text>
+  </view>
+
+  <block wx:for="{{cards}}" wx:key="id">
+    <view class="card">
+      <view class="row">
+        <view style="font-size: 34rpx; font-weight: 700;">{{item.name}}</view>
+        <view class="muted">{{item.distanceKm}}km</view>
+      </view>
+      <view class="subtitle">人均 ¥{{item.avgPrice}}</view>
+      <view style="margin-top: 12rpx;">
+        <block wx:for="{{item.tags}}" wx:key="*this">
+          <text class="tag">{{item}}</text>
+        </block>
+      </view>
+      <view class="subtitle" style="margin-top: 8rpx;">推荐理由：{{item.reason.join(' / ')}}</view>
+
+      <view class="row" style="margin-top: 16rpx; gap: 16rpx;">
+        <button class="btn-primary" style="flex:1;" data-id="{{item.id}}" bindtap="chooseCard">就吃这个</button>
+        <button class="btn-secondary" style="flex:1;" data-id="{{item.id}}" bindtap="rejectCard">不想吃这类</button>
+      </view>
+    </view>
+  </block>
+
+  <view class="row" style="gap: 16rpx; margin-top: 8rpx;">
+    <button class="btn-secondary" style="flex:1;" bindtap="refreshCards">换一批</button>
+    <button class="btn-primary" style="flex:1;" bindtap="randomOne">随机一下</button>
+  </view>
+</view>

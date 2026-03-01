@@ -1,0 +1,4 @@
+button[size="mini"] {
+  padding: 6rpx 14rpx;
+  line-height: 1.1;
+}

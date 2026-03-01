@@ -1,0 +1,24 @@
+<view class="container" wx:if="{{place}}">
+  <view class="card">
+    <view class="title">定了，就它：{{place.name}}</view>
+    <view class="subtitle">距离 {{place.distanceKm}}km · 人均 ¥{{place.avgPrice}}</view>
+    <view class="subtitle">地址：{{place.address}}</view>
+    <view style="margin-top: 14rpx;">
+      <block wx:for="{{place.tags}}" wx:key="*this">
+        <text class="tag">{{item}}</text>
+      </block>
+    </view>
+    <view class="subtitle" style="margin-top: 10rpx;">{{place.reason.join(' / ')}}</view>
+  </view>
+
+  <button class="btn-primary" bindtap="goThere">去这里（导航占位）</button>
+  <button class="btn-secondary" style="margin-top: 14rpx;" bindtap="pickAgain">换一个</button>
+  <button class="btn-secondary" style="margin-top: 14rpx;" bindtap="toRecommend">回推荐页</button>
+</view>
+
+<view class="container" wx:else>
+  <view class="card">
+    <view class="subtitle">还没有选择结果，先去推荐页看看～</view>
+  </view>
+  <button class="btn-primary" bindtap="toRecommend">去推荐页</button>
+</view>
