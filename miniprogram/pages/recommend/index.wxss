@@ -1,3 +1,67 @@
 button {
   line-height: 1.2;
 }
+
+.header-card {
+  margin-bottom: 18rpx;
+}
+
+.radius-chip {
+  min-width: 146rpx;
+  text-align: center;
+}
+
+.source-line {
+  margin-top: 14rpx;
+  display: inline-block;
+  font-size: 22rpx;
+  color: #b45309;
+  background: #ffedd5;
+  padding: 8rpx 14rpx;
+  border-radius: 999rpx;
+}
+
+.restaurant-card {
+  padding-bottom: 20rpx;
+}
+
+.name-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.rank-badge {
+  display: inline-block;
+  width: fit-content;
+  background: #fff7ed;
+  color: #c2410c;
+  border: 1rpx solid #fdba74;
+  border-radius: 999rpx;
+  padding: 4rpx 12rpx;
+  font-size: 20rpx;
+}
+
+.restaurant-name {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #111827;
+}
+
+.distance-pill {
+  font-size: 22rpx;
+  color: #4b5563;
+  background: #f3f4f6;
+  padding: 8rpx 14rpx;
+  border-radius: 999rpx;
+}
+
+.action-row {
+  margin-top: 16rpx;
+  gap: 16rpx;
+}
+
+.bottom-actions {
+  margin-top: 8rpx;
+  margin-bottom: 4rpx;
+}

@@ -1,45 +1,50 @@
 <view class="container">
-  <view class="card">
+  <view class="card header-card">
     <view class="row">
       <view>
         <view class="title" style="font-size: 32rpx;">{{city}} · {{timeSlot}}</view>
         <view class="subtitle">默认1km，最远2km · 到店吃</view>
-        <view class="subtitle" wx:if="{{source === 'cloud'}}">数据源：腾讯地图/云函数（实时）</view>
-        <view class="subtitle" wx:elif="{{source === 'cache'}}">数据源：本地缓存（{{cacheAgeMin}} 分钟前）</view>
-        <view class="subtitle" wx:else>数据源：本地Mock兜底</view>
       </view>
       <picker mode="selector" range="{{radiusOptions}}" bindchange="onRadiusChange">
-        <view class="btn-secondary">半径 {{radiusKm}}km</view>
+        <view class="btn-secondary radius-chip">半径 {{radiusKm}}km</view>
       </picker>
     </view>
+
+    <view class="source-line" wx:if="{{source === 'cloud'}}">实时推荐 · 腾讯地图/云函数</view>
+    <view class="source-line" wx:elif="{{source === 'cache'}}">极速缓存 · {{cacheAgeMin}} 分钟前</view>
+    <view class="source-line" wx:else>本地兜底 · Mock 数据</view>
   </view>
 
   <view wx:if="{{loading}}" class="card">
     <text class="muted">正在生成推荐...</text>
   </view>
 
-  <block wx:for="{{cards}}" wx:key="id">
-    <view class="card">
+  <block wx:for="{{cards}}" wx:key="id" wx:for-index="idx">
+    <view class="card restaurant-card">
       <view class="row">
-        <view style="font-size: 34rpx; font-weight: 700;">{{item.name}}</view>
-        <view class="muted">{{item.distanceKm}}km</view>
+        <view class="name-wrap">
+          <text class="rank-badge">{{idx === 2 ? '探索位' : '稳妥位' + (idx + 1)}}</text>
+          <view class="restaurant-name">{{item.name}}</view>
+        </view>
+        <view class="distance-pill">{{item.distanceKm}}km</view>
       </view>
+
       <view class="subtitle">人均 ¥{{item.avgPrice}}</view>
       <view style="margin-top: 12rpx;">
         <block wx:for="{{item.tags}}" wx:key="*this">
           <text class="tag">{{item}}</text>
         </block>
       </view>
-      <view class="subtitle" style="margin-top: 8rpx;">推荐理由：{{item.reason.join(' / ')}}</view>
+      <view class="subtitle" style="margin-top: 8rpx;">{{item.reason.join(' / ')}}</view>
 
-      <view class="row" style="margin-top: 16rpx; gap: 16rpx;">
+      <view class="row action-row">
         <button class="btn-primary" style="flex:1;" data-id="{{item.id}}" bindtap="chooseCard">就吃这个</button>
         <button class="btn-secondary" style="flex:1;" data-id="{{item.id}}" bindtap="rejectCard">不想吃这类</button>
       </view>
     </view>
   </block>
 
-  <view class="row" style="gap: 16rpx; margin-top: 8rpx;">
+  <view class="row action-row bottom-actions">
     <button class="btn-secondary" style="flex:1;" bindtap="refreshCards">换一批</button>
     <button class="btn-primary" style="flex:1;" bindtap="randomOne">随机一下</button>
   </view>

@@ -1,5 +1,5 @@
 page {
-  background: #fff8ef;
+  background: linear-gradient(180deg, #fff8ef 0%, #fffdf8 100%);
   color: #1f2937;
   font-size: 28rpx;
 }
@@ -10,34 +10,39 @@ page {
 
 .card {
   background: #ffffff;
-  border-radius: 20rpx;
+  border-radius: 24rpx;
   padding: 24rpx;
-  box-shadow: 0 8rpx 24rpx rgba(15, 23, 42, 0.08);
+  border: 1rpx solid #f3f4f6;
+  box-shadow: 0 10rpx 24rpx rgba(15, 23, 42, 0.06);
   margin-bottom: 20rpx;
 }
 
 .title {
   font-size: 38rpx;
   font-weight: 700;
+  letter-spacing: 0.3rpx;
 }
 
 .subtitle {
   color: #6b7280;
   margin-top: 8rpx;
+  font-size: 24rpx;
 }
 
 .btn-primary {
   background: #f97316;
   color: #fff;
   border-radius: 999rpx;
-  padding: 18rpx 24rpx;
+  padding: 16rpx 24rpx;
   text-align: center;
+  border: none;
+  box-shadow: 0 10rpx 20rpx rgba(249, 115, 22, 0.25);
 }
 
 .btn-secondary {
-  background: #ffffff;
-  color: #f97316;
-  border: 2rpx solid #f97316;
+  background: #fff7ed;
+  color: #ea580c;
+  border: 2rpx solid #fdba74;
   border-radius: 999rpx;
   padding: 14rpx 24rpx;
   text-align: center;
@@ -51,7 +56,7 @@ page {
   color: #9a3412;
   margin-right: 10rpx;
   margin-bottom: 10rpx;
-  font-size: 24rpx;
+  font-size: 22rpx;
 }
 
 .tag.active {
