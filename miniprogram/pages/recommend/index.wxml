@@ -34,50 +34,61 @@
     </block>
   </view>
 
-  <view wx:else class="cards-wrap {{cardsVisible ? 'cards-enter' : 'cards-exit'}}">
-    <block wx:for="{{cards}}" wx:key="id" wx:for-index="idx">
-      <view class="card restaurant-card" style="animation-delay: {{idx * 36}}ms;">
-        <view class="row">
-          <view class="name-wrap">
-            <text class="rank-badge">{{idx === 2 ? '探索位' : '稳妥位' + (idx + 1)}}</text>
-            <view class="restaurant-name">{{item.name}}</view>
+  <view wx:else>
+    <view wx:if="{{cards.length > 0}}" class="cards-wrap {{cardsVisible ? 'cards-enter' : 'cards-exit'}}">
+      <block wx:for="{{cards}}" wx:key="id" wx:for-index="idx">
+        <view class="card restaurant-card" style="animation-delay: {{idx * 36}}ms;">
+          <view class="row">
+            <view class="name-wrap">
+              <text class="rank-badge">{{idx === 2 ? '探索位' : '稳妥位' + (idx + 1)}}</text>
+              <view class="restaurant-name">{{item.name}}</view>
+            </view>
+            <view class="distance-pill">{{item.distanceKm}}km</view>
           </view>
-          <view class="distance-pill">{{item.distanceKm}}km</view>
-        </view>
 
-        <view class="subtitle">人均 ¥{{item.avgPrice}}</view>
-        <view style="margin-top: 12rpx;">
-          <block wx:for="{{item.tags}}" wx:key="*this">
-            <text class="tag">{{item}}</text>
-          </block>
-        </view>
-        <view class="subtitle" style="margin-top: 8rpx;">{{item.reason.join(' / ')}}</view>
+          <view class="subtitle">人均 ¥{{item.avgPrice}}</view>
+          <view style="margin-top: 12rpx;">
+            <block wx:for="{{item.tags}}" wx:key="*this">
+              <text class="tag">{{item}}</text>
+            </block>
+          </view>
+          <view class="subtitle" style="margin-top: 8rpx;">{{item.reason.join(' / ')}}</view>
 
-        <view class="row action-row">
-          <button
-            class="btn-primary {{pressedChooseId === item.id ? 'btn-pressed' : ''}}"
-            style="flex:1;"
-            data-id="{{item.id}}"
-            bindtouchstart="onPressChoose"
-            bindtouchend="onReleaseChoose"
-            bindtouchcancel="onReleaseChoose"
-            bindtap="chooseCard"
-          >就吃这个</button>
-          <button
-            class="btn-secondary {{pressedRejectId === item.id ? 'btn-pressed' : ''}}"
-            style="flex:1;"
-            data-id="{{item.id}}"
-            bindtouchstart="onPressReject"
-            bindtouchend="onReleaseReject"
-            bindtouchcancel="onReleaseReject"
-            bindtap="rejectCard"
-          >不想吃这类</button>
+          <view class="row action-row">
+            <button
+              class="btn-primary {{pressedChooseId === item.id ? 'btn-pressed' : ''}}"
+              style="flex:1;"
+              data-id="{{item.id}}"
+              bindtouchstart="onPressChoose"
+              bindtouchend="onReleaseChoose"
+              bindtouchcancel="onReleaseChoose"
+              bindtap="chooseCard"
+            >就吃这个</button>
+            <button
+              class="btn-secondary {{pressedRejectId === item.id ? 'btn-pressed' : ''}}"
+              style="flex:1;"
+              data-id="{{item.id}}"
+              bindtouchstart="onPressReject"
+              bindtouchend="onReleaseReject"
+              bindtouchcancel="onReleaseReject"
+              bindtap="rejectCard"
+            >不想吃这类</button>
+          </view>
         </view>
+      </block>
+    </view>
+
+    <view wx:else class="card empty-card">
+      <view class="title" style="font-size: 30rpx;">附近暂时没有合适推荐</view>
+      <view class="subtitle">{{emptyHint}}</view>
+      <view class="row action-row">
+        <button class="btn-secondary" style="flex:1;" bindtap="useMaxRadius">放宽到 2km</button>
+        <button class="btn-primary" style="flex:1;" bindtap="retryLocate">刷新定位</button>
       </view>
-    </block>
+    </view>
   </view>
 
-  <view class="row action-row bottom-actions">
+  <view wx:if="{{cards.length > 0}}" class="row action-row bottom-actions">
     <button
       class="btn-secondary {{pressedBottom === 'refresh' ? 'btn-pressed' : ''}}"
       style="flex:1;"

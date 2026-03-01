@@ -33,6 +33,7 @@ Page({
     source: 'mock',
     cacheAgeMin: 0,
     cardsVisible: true,
+    emptyHint: '',
     skeletonCards: [1, 2, 3],
     pressedChooseId: '',
     pressedRejectId: '',
@@ -86,6 +87,37 @@ Page({
 
   onReleaseBottom() {
     this.setData({ pressedBottom: '' });
+  },
+
+  useMaxRadius() {
+    const profile = storage.getProfile();
+    if (profile.radiusKm === 2) {
+      this.generateCards();
+      return;
+    }
+
+    profile.radiusKm = 2;
+    storage.setProfile(profile);
+    this.setData({ radiusKm: 2, cardsVisible: false });
+    setTimeout(() => this.generateCards(), 140);
+  },
+
+  async retryLocate() {
+    try {
+      const loc = await getLocation();
+      const profile = storage.getProfile();
+      profile.lastLocation = loc;
+      profile.city = '定位更新成功';
+      storage.setProfile(profile);
+
+      this.setData({
+        city: profile.city,
+        cardsVisible: false
+      });
+      setTimeout(() => this.generateCards(), 140);
+    } catch (err) {
+      wx.showToast({ title: '定位失败，请检查权限', icon: 'none' });
+    }
   },
 
   async fetchNearbyPlaces(profile) {
@@ -164,7 +196,18 @@ Page({
       cards = scorer.recommendTop3(places, profile, logs);
     }
 
-    this.setData({ cards, source, cacheAgeMin: cacheAgeMin || 0, loading: false, cardsVisible: true });
+    let emptyHint = '';
+    if (!cards.length) {
+      if (source === 'cloud') {
+        emptyHint = '附近暂无可用结果，试试放宽到 2km 或刷新定位';
+      } else if (source === 'cache') {
+        emptyHint = '缓存里暂无结果，试试刷新一次';
+      } else {
+        emptyHint = '当前条件下暂无推荐，建议放宽范围';
+      }
+    }
+
+    this.setData({ cards, source, cacheAgeMin: cacheAgeMin || 0, emptyHint, loading: false, cardsVisible: true });
   },
 
   refreshCards() {

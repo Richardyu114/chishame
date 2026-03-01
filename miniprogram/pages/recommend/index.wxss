@@ -175,3 +175,8 @@ button[disabled] {
   margin-top: 8rpx;
   margin-bottom: 4rpx;
 }
+
+.empty-card {
+  border: 1rpx dashed #fdba74;
+  background: #fffbf5;
+}
