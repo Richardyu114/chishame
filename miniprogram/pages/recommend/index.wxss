@@ -13,23 +13,48 @@ button[disabled] {
   filter: brightness(0.96);
 }
 
-.header-card {
+.recommend-page {
+  background: #ffffff;
+  min-height: 100vh;
+}
+
+.top-bar {
   margin-bottom: 18rpx;
+  border-radius: 18rpx;
 }
 
 .radius-chip {
-  min-width: 146rpx;
+  min-width: 118rpx;
   text-align: center;
 }
 
 .source-line {
-  margin-top: 14rpx;
+  margin-top: 12rpx;
   display: inline-block;
   font-size: 22rpx;
-  color: #b45309;
-  background: #ffedd5;
+  color: #6b7280;
+  background: #f8fafc;
   padding: 8rpx 14rpx;
   border-radius: 999rpx;
+}
+
+.location-gate-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.96);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99;
+}
+
+.location-gate-card {
+  width: 82%;
+  background: #ffffff;
+  border: 1rpx solid #e5e7eb;
+  border-radius: 24rpx;
+  padding: 28rpx;
+  box-shadow: 0 10rpx 28rpx rgba(15, 23, 42, 0.08);
 }
 
 .cards-wrap {
@@ -44,6 +69,83 @@ button[disabled] {
 .cards-exit {
   opacity: 0;
   transform: translateY(10rpx);
+}
+
+.poker-swiper {
+  height: 760rpx;
+}
+
+.poker-card {
+  height: 730rpx;
+  border-radius: 26rpx;
+  overflow: hidden;
+  position: relative;
+  background: #f3f4f6;
+  box-shadow: 0 14rpx 30rpx rgba(17, 24, 39, 0.18);
+  animation: cardIn 170ms ease both;
+}
+
+.poker-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.poker-mask {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.68));
+}
+
+.poker-content {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 26rpx;
+  color: #ffffff;
+}
+
+.poker-title {
+  font-size: 42rpx;
+  font-weight: 700;
+  margin-top: 12rpx;
+}
+
+.poker-dish {
+  margin-top: 8rpx;
+  font-size: 26rpx;
+  opacity: 0.95;
+}
+
+.poker-tags {
+  margin-top: 14rpx;
+}
+
+.tag.dark {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  border: 1rpx solid rgba(255, 255, 255, 0.28);
+}
+
+.poker-meta {
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  opacity: 0.92;
+}
+
+.poker-reason {
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  opacity: 0.92;
+}
+
+.card-indicator {
+  text-align: center;
+  color: #6b7280;
+  font-size: 24rpx;
+  margin: 12rpx 0 6rpx;
 }
 
 .skeleton-wrap {
@@ -62,7 +164,7 @@ button[disabled] {
   left: -120rpx;
   width: 120rpx;
   height: 100%;
-  background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,0.7), rgba(255,255,255,0));
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0));
   animation: shimmer 1.4s infinite;
 }
 
@@ -72,7 +174,6 @@ button[disabled] {
 }
 
 .skeleton-line,
-.skeleton-pill,
 .skeleton-button {
   background: #f1f5f9;
   border-radius: 14rpx;
@@ -89,22 +190,6 @@ button[disabled] {
   margin-top: 14rpx;
 }
 
-.skeleton-tags {
-  margin-top: 14rpx;
-  display: flex;
-  gap: 10rpx;
-}
-
-.skeleton-pill {
-  width: 100rpx;
-  height: 34rpx;
-  border-radius: 999rpx;
-}
-
-.skeleton-pill.short {
-  width: 76rpx;
-}
-
 .skeleton-reason {
   width: 86%;
   height: 22rpx;
@@ -118,10 +203,35 @@ button[disabled] {
   border-radius: 999rpx;
 }
 
-.restaurant-card {
-  padding-bottom: 20rpx;
-  animation: cardIn 170ms ease both;
-  will-change: transform, opacity;
+.rank-badge {
+  display: inline-block;
+  width: fit-content;
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  border: 1rpx solid rgba(255, 255, 255, 0.32);
+  border-radius: 999rpx;
+  padding: 4rpx 12rpx;
+  font-size: 20rpx;
+}
+
+.action-row {
+  margin-top: 16rpx;
+  gap: 16rpx;
+}
+
+.bottom-actions {
+  margin-top: 8rpx;
+  margin-bottom: 0;
+}
+
+.bottom-actions-secondary {
+  margin-top: 10rpx;
+  margin-bottom: 4rpx;
+}
+
+.empty-card {
+  border: 1rpx dashed #d1d5db;
+  background: #fafafa;
 }
 
 @keyframes cardIn {
@@ -133,50 +243,4 @@ button[disabled] {
     opacity: 1;
     transform: translateY(0) scale(1);
   }
-}
-
-.name-wrap {
-  display: flex;
-  flex-direction: column;
-  gap: 8rpx;
-}
-
-.rank-badge {
-  display: inline-block;
-  width: fit-content;
-  background: #fff7ed;
-  color: #c2410c;
-  border: 1rpx solid #fdba74;
-  border-radius: 999rpx;
-  padding: 4rpx 12rpx;
-  font-size: 20rpx;
-}
-
-.restaurant-name {
-  font-size: 34rpx;
-  font-weight: 700;
-  color: #111827;
-}
-
-.distance-pill {
-  font-size: 22rpx;
-  color: #4b5563;
-  background: #f3f4f6;
-  padding: 8rpx 14rpx;
-  border-radius: 999rpx;
-}
-
-.action-row {
-  margin-top: 16rpx;
-  gap: 16rpx;
-}
-
-.bottom-actions {
-  margin-top: 8rpx;
-  margin-bottom: 4rpx;
-}
-
-.empty-card {
-  border: 1rpx dashed #fdba74;
-  background: #fffbf5;
 }

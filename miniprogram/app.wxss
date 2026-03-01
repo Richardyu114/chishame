@@ -1,5 +1,5 @@
 page {
-  background: linear-gradient(180deg, #fff8ef 0%, #fffdf8 100%);
+  background: #ffffff;
   color: #1f2937;
   font-size: 28rpx;
 }

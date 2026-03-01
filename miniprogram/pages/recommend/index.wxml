@@ -1,12 +1,12 @@
-<view class="container">
-  <view class="card header-card">
+<view class="container recommend-page">
+  <view class="card top-bar">
     <view class="row">
       <view>
-        <view class="title" style="font-size: 32rpx;">{{city}} · {{timeSlot}}</view>
-        <view class="subtitle">默认1km，最远2km · 到店吃</view>
+        <view class="title" style="font-size: 30rpx;">{{city}} · {{timeSlot}}</view>
+        <view class="subtitle">默认 1km，最远 2km · 到店吃</view>
       </view>
       <picker mode="selector" range="{{radiusOptions}}" bindchange="onRadiusChange">
-        <view class="btn-secondary radius-chip">半径 {{radiusKm}}km</view>
+        <view class="btn-secondary radius-chip">{{radiusKm}}km</view>
       </picker>
     </view>
 
@@ -15,16 +15,20 @@
     <view class="source-line" wx:else>离线兜底</view>
   </view>
 
-  <view wx:if="{{loading}}" class="skeleton-wrap">
+  <view wx:if="{{locationRequired}}" class="location-gate-mask">
+    <view class="location-gate-card">
+      <view class="title" style="font-size: 34rpx;">先授权定位</view>
+      <view class="subtitle">不开定位就没法给你找附近店 😅</view>
+      <button class="btn-primary" style="margin-top: 18rpx;" loading="{{locating}}" bindtap="requestLocationPermission">授权定位并开始</button>
+      <button class="btn-secondary" style="margin-top: 12rpx;" bindtap="openLocationSettings">去系统设置开启</button>
+    </view>
+  </view>
+
+  <view wx:elif="{{loading}}" class="skeleton-wrap">
     <block wx:for="{{skeletonCards}}" wx:key="*this">
       <view class="card skeleton-card">
         <view class="skeleton-line skeleton-title"></view>
         <view class="skeleton-line skeleton-subtitle"></view>
-        <view class="skeleton-tags">
-          <view class="skeleton-pill"></view>
-          <view class="skeleton-pill"></view>
-          <view class="skeleton-pill short"></view>
-        </view>
         <view class="skeleton-line skeleton-reason"></view>
         <view class="row action-row">
           <view class="skeleton-button"></view>
@@ -34,80 +38,95 @@
     </block>
   </view>
 
-  <view wx:else>
-    <view wx:if="{{cards.length > 0}}" class="cards-wrap {{cardsVisible ? 'cards-enter' : 'cards-exit'}}">
+  <view wx:elif="{{cards.length > 0}}" class="cards-wrap {{cardsVisible ? 'cards-enter' : 'cards-exit'}}">
+    <swiper
+      class="poker-swiper"
+      current="{{currentCardIndex}}"
+      bindchange="onCardChange"
+      previous-margin="36rpx"
+      next-margin="36rpx"
+      circular="{{cards.length > 1}}"
+    >
       <block wx:for="{{cards}}" wx:key="id" wx:for-index="idx">
-        <view class="card restaurant-card" style="animation-delay: {{idx * 36}}ms;">
-          <view class="row">
-            <view class="name-wrap">
+        <swiper-item>
+          <view class="poker-card" style="animation-delay: {{idx * 24}}ms;">
+            <image class="poker-bg" src="{{item.coverImage}}" mode="aspectFill"></image>
+            <view class="poker-mask"></view>
+
+            <view class="poker-content">
               <text class="rank-badge">{{idx === 2 ? '天选' : '稳妥'}}</text>
-              <view class="restaurant-name">{{item.name}}</view>
+              <view class="poker-title">{{item.name}}</view>
+              <view class="poker-dish">{{item.dishName}}</view>
+
+              <view class="poker-tags">
+                <block wx:for="{{item.tags}}" wx:key="*this">
+                  <text class="tag dark">{{item}}</text>
+                </block>
+              </view>
+
+              <view class="poker-meta">人均 ¥{{item.avgPrice}} · {{item.distanceKm}}km</view>
+              <view class="poker-reason">{{item.reason.join(' · ')}}</view>
             </view>
-            <view class="distance-pill">{{item.distanceKm}}km</view>
           </view>
-
-          <view class="subtitle">人均 ¥{{item.avgPrice}}</view>
-          <view style="margin-top: 12rpx;">
-            <block wx:for="{{item.tags}}" wx:key="*this">
-              <text class="tag">{{item}}</text>
-            </block>
-          </view>
-          <view class="subtitle" style="margin-top: 8rpx;">{{item.reason.join(' / ')}}</view>
-
-          <view class="row action-row">
-            <button
-              class="btn-primary {{pressedChooseId === item.id ? 'btn-pressed' : ''}}"
-              style="flex:1;"
-              data-id="{{item.id}}"
-              bindtouchstart="onPressChoose"
-              bindtouchend="onReleaseChoose"
-              bindtouchcancel="onReleaseChoose"
-              bindtap="chooseCard"
-            >就吃这个</button>
-            <button
-              class="btn-secondary {{pressedRejectId === item.id ? 'btn-pressed' : ''}}"
-              style="flex:1;"
-              data-id="{{item.id}}"
-              bindtouchstart="onPressReject"
-              bindtouchend="onReleaseReject"
-              bindtouchcancel="onReleaseReject"
-              bindtap="rejectCard"
-            >不想吃这类</button>
-          </view>
-        </view>
+        </swiper-item>
       </block>
+    </swiper>
+
+    <view class="card-indicator">{{currentCardIndex + 1}} / {{cards.length}}</view>
+
+    <view class="row action-row bottom-actions">
+      <button
+        class="btn-secondary {{pressedAction === 'reject' ? 'btn-pressed' : ''}}"
+        style="flex:1;"
+        data-action="reject"
+        disabled="{{loading}}"
+        bindtouchstart="onPressAction"
+        bindtouchend="onReleaseAction"
+        bindtouchcancel="onReleaseAction"
+        bindtap="rejectCurrentCard"
+      >不想吃这类</button>
+      <button
+        class="btn-primary {{pressedAction === 'choose' ? 'btn-pressed' : ''}}"
+        style="flex:1;"
+        data-action="choose"
+        disabled="{{loading}}"
+        bindtouchstart="onPressAction"
+        bindtouchend="onReleaseAction"
+        bindtouchcancel="onReleaseAction"
+        bindtap="chooseCurrentCard"
+      >选这家</button>
     </view>
 
-    <view wx:else class="card empty-card">
-      <view class="title" style="font-size: 30rpx;">附近这波没缘分</view>
-      <view class="subtitle">{{emptyHint}}</view>
-      <view class="row action-row">
-        <button class="btn-secondary" style="flex:1;" bindtap="useMaxRadius">放宽到 2km</button>
-        <button class="btn-primary" style="flex:1;" bindtap="retryLocate">刷新定位</button>
-      </view>
+    <view class="row action-row bottom-actions-secondary">
+      <button
+        class="btn-secondary {{pressedAction === 'refresh' ? 'btn-pressed' : ''}}"
+        style="flex:1;"
+        data-action="refresh"
+        disabled="{{loading}}"
+        bindtouchstart="onPressAction"
+        bindtouchend="onReleaseAction"
+        bindtouchcancel="onReleaseAction"
+        bindtap="refreshCards"
+      >换一批</button>
+      <button
+        class="btn-primary {{pressedAction === 'random' ? 'btn-pressed' : ''}}"
+        style="flex:1;"
+        data-action="random"
+        disabled="{{loading}}"
+        bindtouchstart="onPressAction"
+        bindtouchend="onReleaseAction"
+        bindtouchcancel="onReleaseAction"
+        bindtap="randomOne"
+      >看天意</button>
     </view>
   </view>
 
-  <view wx:if="{{cards.length > 0}}" class="row action-row bottom-actions">
-    <button
-      class="btn-secondary {{pressedBottom === 'refresh' ? 'btn-pressed' : ''}}"
-      style="flex:1;"
-      data-action="refresh"
-      disabled="{{loading}}"
-      bindtouchstart="onPressBottom"
-      bindtouchend="onReleaseBottom"
-      bindtouchcancel="onReleaseBottom"
-      bindtap="refreshCards"
-    >换一批</button>
-    <button
-      class="btn-primary {{pressedBottom === 'random' ? 'btn-pressed' : ''}}"
-      style="flex:1;"
-      data-action="random"
-      disabled="{{loading}}"
-      bindtouchstart="onPressBottom"
-      bindtouchend="onReleaseBottom"
-      bindtouchcancel="onReleaseBottom"
-      bindtap="randomOne"
-    >看天意</button>
+  <view wx:else class="card empty-card">
+    <view class="title" style="font-size: 30rpx;">附近这波没缘分</view>
+    <view class="subtitle">{{emptyHint}}</view>
+    <view class="row action-row">
+      <button class="btn-secondary" style="flex:1;" bindtap="useMaxRadius">放宽到 2km</button>
+      <button class="btn-primary" style="flex:1;" bindtap="retryLocate">刷新定位</button>
+    </view>
   </view>
 </view>
