@@ -2,6 +2,7 @@ const storage = require('../../utils/storage');
 const mock = require('../../utils/mock');
 const scorer = require('../../utils/scorer');
 const cloud = require('../../utils/cloud');
+const nearbyCache = require('../../utils/nearbyCache');
 
 function getTimeSlot() {
   const hour = new Date().getHours();
@@ -29,7 +30,8 @@ Page({
     radiusKm: 1,
     cards: [],
     loading: false,
-    source: 'mock'
+    source: 'mock',
+    cacheAgeMin: 0
   },
 
   async onShow() {
@@ -67,6 +69,20 @@ Page({
         storage.setProfile(profile);
       }
 
+      // 先查本地缓存：低成本、快响应
+      const cached = nearbyCache.getNearby({
+        lat: loc.lat,
+        lng: loc.lng,
+        radiusKm: profile.radiusKm
+      });
+      if (cached.hit && cached.places.length > 0) {
+        return {
+          places: cached.places,
+          source: 'cache',
+          cacheAgeMin: Math.max(1, Math.floor(cached.ageMs / 60000))
+        };
+      }
+
       const searchRes = await cloud.searchNearby({
         lat: loc.lat,
         lng: loc.lng,
@@ -76,7 +92,15 @@ Page({
 
       const places = (searchRes && searchRes.data) || [];
       if (places.length > 0) {
-        return { places, source: 'cloud' };
+        nearbyCache.setNearby({
+          lat: loc.lat,
+          lng: loc.lng,
+          radiusKm: profile.radiusKm,
+          places,
+          ttlMs: nearbyCache.DEFAULT_TTL_MS
+        });
+
+        return { places, source: 'cloud', cacheAgeMin: 0 };
       }
     } catch (err) {
       console.warn('cloud search failed, fallback to mock', err);
@@ -84,7 +108,8 @@ Page({
 
     return {
       places: mock.getNearbyPlaces(profile.radiusKm),
-      source: 'mock'
+      source: 'mock',
+      cacheAgeMin: 0
     };
   },
 
@@ -93,11 +118,11 @@ Page({
 
     const profile = storage.getProfile();
     const logs = storage.getLogs();
-    const { places, source } = await this.fetchNearbyPlaces(profile);
+    const { places, source, cacheAgeMin } = await this.fetchNearbyPlaces(profile);
 
     let cards = [];
 
-    if (source === 'cloud' && cloud.hasCloud()) {
+    if ((source === 'cloud' || source === 'cache') && cloud.hasCloud()) {
       try {
         const recRes = await cloud.recommend({ places, profile, logs });
         cards = (recRes && recRes.data) || [];
@@ -110,7 +135,7 @@ Page({
       cards = scorer.recommendTop3(places, profile, logs);
     }
 
-    this.setData({ cards, source, loading: false });
+    this.setData({ cards, source, cacheAgeMin: cacheAgeMin || 0, loading: false });
   },
 
   refreshCards() {

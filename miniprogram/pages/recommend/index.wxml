@@ -4,7 +4,9 @@
       <view>
         <view class="title" style="font-size: 32rpx;">{{city}} · {{timeSlot}}</view>
         <view class="subtitle">默认1km，最远2km · 到店吃</view>
-        <view class="subtitle">数据源：{{source === 'cloud' ? '腾讯地图/云函数' : '本地Mock兜底'}}</view>
+        <view class="subtitle" wx:if="{{source === 'cloud'}}">数据源：腾讯地图/云函数（实时）</view>
+        <view class="subtitle" wx:elif="{{source === 'cache'}}">数据源：本地缓存（{{cacheAgeMin}} 分钟前）</view>
+        <view class="subtitle" wx:else>数据源：本地Mock兜底</view>
       </view>
       <picker mode="selector" range="{{radiusOptions}}" bindchange="onRadiusChange">
         <view class="btn-secondary">半径 {{radiusKm}}km</view>
