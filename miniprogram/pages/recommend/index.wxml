@@ -10,9 +10,9 @@
       </picker>
     </view>
 
-    <view class="source-line" wx:if="{{source === 'cloud'}}">实时推荐 · 腾讯地图/云函数</view>
-    <view class="source-line" wx:elif="{{source === 'cache'}}">极速缓存 · {{cacheAgeMin}} 分钟前</view>
-    <view class="source-line" wx:else>本地兜底 · Mock 数据</view>
+    <view class="source-line" wx:if="{{source === 'cloud'}}">实时附近</view>
+    <view class="source-line" wx:elif="{{source === 'cache'}}">缓存于 {{cacheAgeMin}} 分钟前</view>
+    <view class="source-line" wx:else>离线兜底</view>
   </view>
 
   <view wx:if="{{loading}}" class="skeleton-wrap">
@@ -40,7 +40,7 @@
         <view class="card restaurant-card" style="animation-delay: {{idx * 36}}ms;">
           <view class="row">
             <view class="name-wrap">
-              <text class="rank-badge">{{idx === 2 ? '探索位' : '稳妥位' + (idx + 1)}}</text>
+              <text class="rank-badge">{{idx === 2 ? '天选' : '稳妥'}}</text>
               <view class="restaurant-name">{{item.name}}</view>
             </view>
             <view class="distance-pill">{{item.distanceKm}}km</view>
@@ -79,7 +79,7 @@
     </view>
 
     <view wx:else class="card empty-card">
-      <view class="title" style="font-size: 30rpx;">附近暂时没有合适推荐</view>
+      <view class="title" style="font-size: 30rpx;">附近这波没缘分</view>
       <view class="subtitle">{{emptyHint}}</view>
       <view class="row action-row">
         <button class="btn-secondary" style="flex:1;" bindtap="useMaxRadius">放宽到 2km</button>
@@ -108,6 +108,6 @@
       bindtouchend="onReleaseBottom"
       bindtouchcancel="onReleaseBottom"
       bindtap="randomOne"
-    >随机一下</button>
+    >看天意</button>
   </view>
 </view>

@@ -199,11 +199,11 @@ Page({
     let emptyHint = '';
     if (!cards.length) {
       if (source === 'cloud') {
-        emptyHint = '附近暂无可用结果，试试放宽到 2km 或刷新定位';
+        emptyHint = '放宽到 2km 或刷新定位，再抽一轮';
       } else if (source === 'cache') {
-        emptyHint = '缓存里暂无结果，试试刷新一次';
+        emptyHint = '缓存里暂无结果，刷新后再看天意';
       } else {
-        emptyHint = '当前条件下暂无推荐，建议放宽范围';
+        emptyHint = '当前条件太严，放宽范围再试一次';
       }
     }
 
@@ -220,6 +220,7 @@ Page({
     const cards = this.data.cards;
     if (!cards.length) return;
     const item = cards[Math.floor(Math.random() * cards.length)];
+    wx.showToast({ title: '天意已定', icon: 'none' });
     this.chooseWithItem(item, 'random');
   },
 

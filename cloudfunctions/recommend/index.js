@@ -55,9 +55,9 @@ function scorePlace(place, profile, logs) {
     ...place,
     score,
     reason: [
-      budgetMatch >= 16 ? '预算匹配' : '预算接近',
-      place.distanceKm <= profile.radiusKm ? '距离合适' : '距离稍远',
-      repeatPenalty > 0 ? '近期吃过（已惩罚）' : '最近3天没吃过'
+      budgetMatch >= 16 ? '预算对口' : '预算接近',
+      place.distanceKm <= profile.radiusKm ? '离得近' : '稍微有点远',
+      repeatPenalty > 0 ? '最近吃过' : '最近没吃'
     ]
   };
 }
