@@ -32,6 +32,7 @@ Page({
     loading: false,
     source: 'mock',
     cacheAgeMin: 0,
+    cardsVisible: true,
     pressedChooseId: '',
     pressedRejectId: '',
     pressedBottom: ''
@@ -58,8 +59,8 @@ Page({
     const profile = storage.getProfile();
     profile.radiusKm = radiusKm;
     storage.setProfile(profile);
-    this.setData({ radiusKm });
-    this.generateCards();
+    this.setData({ radiusKm, cardsVisible: false });
+    setTimeout(() => this.generateCards(), 140);
   },
 
   onPressChoose(e) {
@@ -162,12 +163,12 @@ Page({
       cards = scorer.recommendTop3(places, profile, logs);
     }
 
-    this.setData({ cards, source, cacheAgeMin: cacheAgeMin || 0, loading: false });
+    this.setData({ cards, source, cacheAgeMin: cacheAgeMin || 0, loading: false, cardsVisible: true });
   },
 
   refreshCards() {
-    this.setData({ pressedBottom: '' });
-    this.generateCards();
+    this.setData({ pressedBottom: '', cardsVisible: false });
+    setTimeout(() => this.generateCards(), 140);
   },
 
   randomOne() {
