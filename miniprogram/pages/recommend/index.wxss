@@ -1,5 +1,11 @@
 button {
   line-height: 1.2;
+  transition: transform 120ms ease, filter 120ms ease, box-shadow 120ms ease;
+}
+
+.btn-pressed {
+  transform: scale(0.97);
+  filter: brightness(0.96);
 }
 
 .header-card {

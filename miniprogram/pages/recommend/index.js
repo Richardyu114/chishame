@@ -31,7 +31,10 @@ Page({
     cards: [],
     loading: false,
     source: 'mock',
-    cacheAgeMin: 0
+    cacheAgeMin: 0,
+    pressedChooseId: '',
+    pressedRejectId: '',
+    pressedBottom: ''
   },
 
   async onShow() {
@@ -57,6 +60,30 @@ Page({
     storage.setProfile(profile);
     this.setData({ radiusKm });
     this.generateCards();
+  },
+
+  onPressChoose(e) {
+    this.setData({ pressedChooseId: e.currentTarget.dataset.id || '' });
+  },
+
+  onReleaseChoose() {
+    this.setData({ pressedChooseId: '' });
+  },
+
+  onPressReject(e) {
+    this.setData({ pressedRejectId: e.currentTarget.dataset.id || '' });
+  },
+
+  onReleaseReject() {
+    this.setData({ pressedRejectId: '' });
+  },
+
+  onPressBottom(e) {
+    this.setData({ pressedBottom: e.currentTarget.dataset.action || '' });
+  },
+
+  onReleaseBottom() {
+    this.setData({ pressedBottom: '' });
   },
 
   async fetchNearbyPlaces(profile) {
@@ -139,10 +166,12 @@ Page({
   },
 
   refreshCards() {
+    this.setData({ pressedBottom: '' });
     this.generateCards();
   },
 
   randomOne() {
+    this.setData({ pressedBottom: '' });
     const cards = this.data.cards;
     if (!cards.length) return;
     const item = cards[Math.floor(Math.random() * cards.length)];
@@ -151,6 +180,7 @@ Page({
 
   chooseCard(e) {
     const id = e.currentTarget.dataset.id;
+    this.setData({ pressedChooseId: '' });
     const item = this.data.cards.find(c => c.id === id);
     if (!item) return;
     this.chooseWithItem(item, 'choose');
@@ -184,6 +214,7 @@ Page({
 
   rejectCard(e) {
     const id = e.currentTarget.dataset.id;
+    this.setData({ pressedRejectId: '' });
     const item = this.data.cards.find(c => c.id === id);
     if (!item) return;
 

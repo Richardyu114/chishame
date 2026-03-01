@@ -38,14 +38,46 @@
       <view class="subtitle" style="margin-top: 8rpx;">{{item.reason.join(' / ')}}</view>
 
       <view class="row action-row">
-        <button class="btn-primary" style="flex:1;" data-id="{{item.id}}" bindtap="chooseCard">就吃这个</button>
-        <button class="btn-secondary" style="flex:1;" data-id="{{item.id}}" bindtap="rejectCard">不想吃这类</button>
+        <button
+          class="btn-primary {{pressedChooseId === item.id ? 'btn-pressed' : ''}}"
+          style="flex:1;"
+          data-id="{{item.id}}"
+          bindtouchstart="onPressChoose"
+          bindtouchend="onReleaseChoose"
+          bindtouchcancel="onReleaseChoose"
+          bindtap="chooseCard"
+        >就吃这个</button>
+        <button
+          class="btn-secondary {{pressedRejectId === item.id ? 'btn-pressed' : ''}}"
+          style="flex:1;"
+          data-id="{{item.id}}"
+          bindtouchstart="onPressReject"
+          bindtouchend="onReleaseReject"
+          bindtouchcancel="onReleaseReject"
+          bindtap="rejectCard"
+        >不想吃这类</button>
       </view>
     </view>
   </block>
 
   <view class="row action-row bottom-actions">
-    <button class="btn-secondary" style="flex:1;" bindtap="refreshCards">换一批</button>
-    <button class="btn-primary" style="flex:1;" bindtap="randomOne">随机一下</button>
+    <button
+      class="btn-secondary {{pressedBottom === 'refresh' ? 'btn-pressed' : ''}}"
+      style="flex:1;"
+      data-action="refresh"
+      bindtouchstart="onPressBottom"
+      bindtouchend="onReleaseBottom"
+      bindtouchcancel="onReleaseBottom"
+      bindtap="refreshCards"
+    >换一批</button>
+    <button
+      class="btn-primary {{pressedBottom === 'random' ? 'btn-pressed' : ''}}"
+      style="flex:1;"
+      data-action="random"
+      bindtouchstart="onPressBottom"
+      bindtouchend="onReleaseBottom"
+      bindtouchcancel="onReleaseBottom"
+      bindtap="randomOne"
+    >随机一下</button>
   </view>
 </view>
