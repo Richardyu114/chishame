@@ -3,6 +3,11 @@ button {
   transition: transform 120ms ease, filter 120ms ease, box-shadow 120ms ease;
 }
 
+button[disabled] {
+  opacity: 0.62;
+  filter: saturate(0.75);
+}
+
 .btn-pressed {
   transform: scale(0.97);
   filter: brightness(0.96);
@@ -39,6 +44,78 @@ button {
 .cards-exit {
   opacity: 0;
   transform: translateY(10rpx);
+}
+
+.skeleton-wrap {
+  margin-bottom: 6rpx;
+}
+
+.skeleton-card {
+  overflow: hidden;
+  position: relative;
+}
+
+.skeleton-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -120rpx;
+  width: 120rpx;
+  height: 100%;
+  background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,0.7), rgba(255,255,255,0));
+  animation: shimmer 1.4s infinite;
+}
+
+@keyframes shimmer {
+  0% { left: -140rpx; }
+  100% { left: 100%; }
+}
+
+.skeleton-line,
+.skeleton-pill,
+.skeleton-button {
+  background: #f1f5f9;
+  border-radius: 14rpx;
+}
+
+.skeleton-title {
+  width: 58%;
+  height: 32rpx;
+}
+
+.skeleton-subtitle {
+  width: 36%;
+  height: 24rpx;
+  margin-top: 14rpx;
+}
+
+.skeleton-tags {
+  margin-top: 14rpx;
+  display: flex;
+  gap: 10rpx;
+}
+
+.skeleton-pill {
+  width: 100rpx;
+  height: 34rpx;
+  border-radius: 999rpx;
+}
+
+.skeleton-pill.short {
+  width: 76rpx;
+}
+
+.skeleton-reason {
+  width: 86%;
+  height: 22rpx;
+  margin-top: 16rpx;
+}
+
+.skeleton-button {
+  flex: 1;
+  height: 72rpx;
+  margin-top: 16rpx;
+  border-radius: 999rpx;
 }
 
 .restaurant-card {

@@ -15,11 +15,26 @@
     <view class="source-line" wx:else>本地兜底 · Mock 数据</view>
   </view>
 
-  <view wx:if="{{loading}}" class="card">
-    <text class="muted">正在生成推荐...</text>
+  <view wx:if="{{loading}}" class="skeleton-wrap">
+    <block wx:for="{{skeletonCards}}" wx:key="*this">
+      <view class="card skeleton-card">
+        <view class="skeleton-line skeleton-title"></view>
+        <view class="skeleton-line skeleton-subtitle"></view>
+        <view class="skeleton-tags">
+          <view class="skeleton-pill"></view>
+          <view class="skeleton-pill"></view>
+          <view class="skeleton-pill short"></view>
+        </view>
+        <view class="skeleton-line skeleton-reason"></view>
+        <view class="row action-row">
+          <view class="skeleton-button"></view>
+          <view class="skeleton-button"></view>
+        </view>
+      </view>
+    </block>
   </view>
 
-  <view class="cards-wrap {{cardsVisible ? 'cards-enter' : 'cards-exit'}}">
+  <view wx:else class="cards-wrap {{cardsVisible ? 'cards-enter' : 'cards-exit'}}">
     <block wx:for="{{cards}}" wx:key="id" wx:for-index="idx">
       <view class="card restaurant-card" style="animation-delay: {{idx * 36}}ms;">
         <view class="row">
@@ -67,6 +82,7 @@
       class="btn-secondary {{pressedBottom === 'refresh' ? 'btn-pressed' : ''}}"
       style="flex:1;"
       data-action="refresh"
+      disabled="{{loading}}"
       bindtouchstart="onPressBottom"
       bindtouchend="onReleaseBottom"
       bindtouchcancel="onReleaseBottom"
@@ -76,6 +92,7 @@
       class="btn-primary {{pressedBottom === 'random' ? 'btn-pressed' : ''}}"
       style="flex:1;"
       data-action="random"
+      disabled="{{loading}}"
       bindtouchstart="onPressBottom"
       bindtouchend="onReleaseBottom"
       bindtouchcancel="onReleaseBottom"

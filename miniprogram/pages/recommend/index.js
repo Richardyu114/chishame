@@ -33,6 +33,7 @@ Page({
     source: 'mock',
     cacheAgeMin: 0,
     cardsVisible: true,
+    skeletonCards: [1, 2, 3],
     pressedChooseId: '',
     pressedRejectId: '',
     pressedBottom: ''
