@@ -7,7 +7,7 @@
   ],
   "window": {
     "navigationBarTitleText": "吃啥么",
-    "navigationBarBackgroundColor": "#FFF8EF",
+    "navigationBarBackgroundColor": "#FFFFFF",
     "navigationBarTextStyle": "black",
     "backgroundTextStyle": "light"
   },
@@ -19,7 +19,7 @@
     "list": [
       {
         "pagePath": "pages/recommend/index",
-        "text": "推荐"
+        "text": "吃什么"
       },
       {
         "pagePath": "pages/profile/index",

@@ -1,48 +1,61 @@
 const PROFILE_KEY = 'chishame_profile';
 const LOG_KEY = 'chishame_decision_logs';
-const SELECTED_KEY = 'chishame_selected_place';
+const SELECTED_KEY = 'chishame_selected_item';
 
 const defaultProfile = {
   hasOnboarded: false,
-  budgetMin: 20,
-  budgetMax: 60,
-  radiusKm: 1,
-  maxRadiusKm: 2,
-  dineInOnly: true,
-  tasteTags: ['米饭', '面食'],
+  preferredFlavor: '随机',
+  tasteTags: ['均衡', '日常'],
   tabooTags: [],
+  quoteStyle: '经典',
   tasteWeights: {
-    米饭: 1,
-    面食: 1,
     清淡: 0,
-    辣: 0,
-    快餐: 0,
-    火锅: 0,
-    粤菜: 0,
-    川菜: 0,
-    日料: 0
-  },
-  city: '未定位',
-  lastLocation: null
+    均衡: 1,
+    下饭: 0,
+    浓香: 0,
+    辛辣: 0,
+    轻食: 0,
+    日常: 1
+  }
 };
+
+function normalizeProfile(profile = {}) {
+  const merged = {
+    ...defaultProfile,
+    ...profile,
+    tasteWeights: {
+      ...defaultProfile.tasteWeights,
+      ...(profile.tasteWeights || {})
+    }
+  };
+
+  // 兼容旧字段
+  if (!merged.preferredFlavor) {
+    merged.preferredFlavor = '随机';
+  }
+  return merged;
+}
 
 function ensureDefaults() {
   const profile = wx.getStorageSync(PROFILE_KEY);
   if (!profile) {
     wx.setStorageSync(PROFILE_KEY, defaultProfile);
+  } else {
+    wx.setStorageSync(PROFILE_KEY, normalizeProfile(profile));
   }
+
   const logs = wx.getStorageSync(LOG_KEY);
-  if (!logs) {
+  if (!Array.isArray(logs)) {
     wx.setStorageSync(LOG_KEY, []);
   }
 }
 
 function getProfile() {
-  return wx.getStorageSync(PROFILE_KEY) || { ...defaultProfile };
+  return normalizeProfile(wx.getStorageSync(PROFILE_KEY) || {});
 }
 
 function setProfile(next) {
-  wx.setStorageSync(PROFILE_KEY, next);
+  wx.setStorageSync(PROFILE_KEY, normalizeProfile(next));
 }
 
 function getLogs() {
@@ -55,8 +68,8 @@ function appendLog(log) {
   wx.setStorageSync(LOG_KEY, logs.slice(0, 200));
 }
 
-function setSelected(place) {
-  wx.setStorageSync(SELECTED_KEY, place);
+function setSelected(item) {
+  wx.setStorageSync(SELECTED_KEY, item);
 }
 
 function getSelected() {

@@ -1,46 +1,33 @@
 <view class="container" wx:if="{{profile}}">
   <view class="card">
-    <view class="title" style="font-size: 34rpx;">基础设置</view>
-    <view class="subtitle">推荐半径（默认1km，最远2km）</view>
-    <radio-group bindchange="onRadiusChange">
-      <label style="margin-right: 20rpx;">
-        <radio value="1" checked="{{profile.radiusKm===1}}"/>1km
-      </label>
-      <label>
-        <radio value="2" checked="{{profile.radiusKm===2}}"/>2km
-      </label>
-    </radio-group>
+    <view class="title" style="font-size: 34rpx;">吃啥么设置</view>
+    <view class="subtitle">偏好口味</view>
+    <picker mode="selector" range="{{flavorOptions}}" value="{{flavorIndex}}" bindchange="onFlavorChange">
+      <view class="btn-secondary" style="display:inline-block; margin-top:12rpx;">{{profile.preferredFlavor}}</view>
+    </picker>
 
-    <view class="subtitle" style="margin-top: 16rpx;">预算最小值（元）</view>
-    <slider min="10" max="200" step="5" show-value value="{{profile.budgetMin}}" bindchange="onBudgetMinChange" />
-
-    <view class="subtitle">预算最大值（元）</view>
-    <slider min="20" max="300" step="5" show-value value="{{profile.budgetMax}}" bindchange="onBudgetMaxChange" />
+    <view class="subtitle" style="margin-top: 18rpx;">不吃/少吃</view>
+    <view style="margin-top: 10rpx;">
+      <block wx:for="{{tabooOptions}}" wx:key="*this">
+        <text class="tag {{profile.tabooTags.includes(item) ? 'active' : ''}}" data-tag="{{item}}" bindtap="toggleTaboo">{{item}}</text>
+      </block>
+    </view>
   </view>
 
   <view class="card">
-    <view class="title" style="font-size: 34rpx;">口味权重（学习结果）</view>
-    <block wx:for="{{tasteWeightEntries}}" wx:key="tag">
-      <view class="row" style="margin-top: 10rpx;">
-        <text>{{item.tag}}</text>
-        <view class="row" style="gap: 14rpx;">
-          <button size="mini" class="btn-secondary" data-tag="{{item.tag}}" data-delta="-1" bindtap="adjustWeight">-</button>
-          <text>{{item.value}}</text>
-          <button size="mini" class="btn-secondary" data-tag="{{item.tag}}" data-delta="1" bindtap="adjustWeight">+</button>
-        </view>
-      </view>
-    </block>
-  </view>
+    <view class="row">
+      <view class="title" style="font-size: 34rpx;">最近记录</view>
+      <button size="mini" class="btn-secondary" bindtap="clearLogs">清空</button>
+    </view>
 
-  <view class="card">
-    <view class="title" style="font-size: 34rpx;">最近记录</view>
     <block wx:if="{{logs.length === 0}}">
       <view class="subtitle">暂无记录</view>
     </block>
+
     <block wx:for="{{logs}}" wx:key="ts">
       <view style="margin-top: 12rpx; border-bottom: 1rpx solid #f3f4f6; padding-bottom: 10rpx;">
-        <view>{{item.placeName}} · {{item.action}}</view>
-        <view class="subtitle">{{item.radiusKm}}km / {{item.tags.join('、')}}</view>
+        <view>{{item.mealTitle || item.placeName}} · {{item.action}}</view>
+        <view class="subtitle">{{item.tags ? item.tags.join('、') : ''}}</view>
       </view>
     </block>
   </view>

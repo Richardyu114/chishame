@@ -1,17 +1,30 @@
-<view class="container" wx:if="{{place}}">
-  <view class="card">
-    <view class="title">定了，就它：{{place.name}}</view>
-    <view class="subtitle">距离 {{place.distanceKm}}km · 人均 ¥{{place.avgPrice}}</view>
-    <view class="subtitle">地址：{{place.address}}</view>
-    <view style="margin-top: 14rpx;">
-      <block wx:for="{{place.tags}}" wx:key="*this">
-        <text class="tag">{{item}}</text>
-      </block>
+<view class="container" wx:if="{{meal}}">
+  <view class="card result-hero">
+    <image class="cover" src="{{meal.image}}" mode="aspectFill"></image>
+    <view class="mask"></view>
+    <view class="hero-content">
+      <view class="title">定了，今天吃这个</view>
+      <view class="meal-title">{{meal.title}}</view>
+      <view class="subtitle" style="color:#f3f4f6;">{{meal.dishLine}}</view>
     </view>
-    <view class="subtitle" style="margin-top: 10rpx;">{{place.reason.join(' / ')}}</view>
   </view>
 
-  <button class="btn-primary" bindtap="goThere">去这里（导航占位）</button>
+  <view class="card">
+    <view class="title" style="font-size: 32rpx;">这一餐结构</view>
+    <view class="subtitle">主食：{{meal.staple}}</view>
+    <view class="subtitle">蛋白：{{meal.protein}}</view>
+    <view class="subtitle">蔬菜：{{meal.veggie}}</view>
+    <view class="subtitle">补充：{{meal.extra}}</view>
+    <view class="subtitle" style="margin-top:10rpx;">估算热量：{{meal.calories}} kcal</view>
+  </view>
+
+  <view class="card">
+    <view class="title" style="font-size: 32rpx;">今日语录</view>
+    <view class="quote">“{{meal.quote.text}}”</view>
+    <view class="subtitle">—— {{meal.quote.from}}</view>
+  </view>
+
+  <button class="btn-primary" bindtap="copyShareText">复制分享文案</button>
   <button class="btn-secondary" style="margin-top: 14rpx;" bindtap="pickAgain">换一个</button>
   <button class="btn-secondary" style="margin-top: 14rpx;" bindtap="toRecommend">回推荐页</button>
 </view>

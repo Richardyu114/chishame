@@ -1,1 +1,39 @@
-/* result styles */
+.result-hero {
+  height: 420rpx;
+  position: relative;
+  overflow: hidden;
+  border-radius: 24rpx;
+  padding: 0;
+}
+
+.cover {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.mask {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.66));
+}
+
+.hero-content {
+  position: absolute;
+  left: 24rpx;
+  right: 24rpx;
+  bottom: 24rpx;
+  color: #fff;
+}
+
+.meal-title {
+  margin-top: 8rpx;
+  font-size: 40rpx;
+  font-weight: 700;
+}
+
+.quote {
+  margin-top: 12rpx;
+  line-height: 1.6;
+}
