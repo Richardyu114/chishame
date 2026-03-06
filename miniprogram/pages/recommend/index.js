@@ -22,6 +22,10 @@ Page({
     preferredFlavor: '随机'
   },
 
+  onLoad() {
+    this._loadToken = 0;
+  },
+
   onShow() {
     const profile = storage.getProfile();
     this.setData({ preferredFlavor: profile.preferredFlavor || '随机' });
@@ -46,19 +50,42 @@ Page({
   },
 
   generateCards() {
+    const startedAt = Date.now();
+    const currentToken = startedAt;
+    this._loadToken = currentToken;
     this.setData({ loading: true });
+
     const profile = storage.getProfile();
 
-    setTimeout(() => {
-      const cards = foodEngine.generateMeals(profile, 4);
-      this.setData({
-        cards,
-        loading: false,
-        currentCardIndex: 0,
-        cardsVisible: true,
-        preferredFlavor: profile.preferredFlavor || '随机'
+    foodEngine
+      .generateMeals(profile, 4)
+      .then((cards) => {
+        if (this._loadToken !== currentToken) return;
+
+        const minLoading = 180;
+        const delay = Math.max(0, minLoading - (Date.now() - startedAt));
+
+        setTimeout(() => {
+          if (this._loadToken !== currentToken) return;
+          this.setData({
+            cards: Array.isArray(cards) ? cards : [],
+            loading: false,
+            currentCardIndex: 0,
+            cardsVisible: true,
+            preferredFlavor: profile.preferredFlavor || '随机'
+          });
+        }, delay);
+      })
+      .catch(() => {
+        if (this._loadToken !== currentToken) return;
+        this.setData({
+          cards: [],
+          loading: false,
+          currentCardIndex: 0,
+          cardsVisible: true,
+          preferredFlavor: profile.preferredFlavor || '随机'
+        });
       });
-    }, 180);
   },
 
   refreshCards() {

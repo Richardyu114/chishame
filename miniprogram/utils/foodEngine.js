@@ -1,4 +1,38 @@
 const data = require('./foodData');
+const remoteContent = require('./remoteContent');
+
+const flavorKeywords = {
+  清淡: ['light', 'steam', 'steamed', 'salad', 'soup', 'boiled', '清淡', '蒸', '汤'],
+  下饭: ['curry', 'stew', 'fried', 'braised', 'sauce', '下饭', '红烧'],
+  浓香: ['butter', 'cream', 'cheese', 'roast', 'bbq', '浓香', '芝士'],
+  辛辣: ['spicy', 'chili', 'pepper', 'hot', 'masala', '辛辣', '麻辣', '辣'],
+  轻食: ['vegetarian', 'vegan', 'salad', 'light', '轻食']
+};
+
+const tabooKeywords = {
+  海鲜: ['fish', 'shrimp', 'prawn', 'crab', 'squid', 'clam', 'mussel', 'oyster', 'seafood', '海鲜', '鱼', '虾', '蟹', '鱿鱼'],
+  牛肉: ['beef', 'veal', '牛肉', '牛腩'],
+  豆制品: ['tofu', 'soy', 'bean curd', '豆腐', '豆制品', '黄豆'],
+  鸡蛋: ['egg', 'omelette', '鸡蛋', '蛋'],
+  生冷: ['raw', 'cold', 'salad', 'sashimi', '生冷', '凉拌'],
+  辛辣: ['spicy', 'chili', 'pepper', 'hot', 'curry', '辛辣', '麻辣', '辣椒']
+};
+
+const stapleWords = [
+  'rice', 'risotto', 'noodle', 'pasta', 'bread', 'bun', 'dumpling', 'potato', 'corn', 'oat', 'quinoa',
+  '米饭', '面', '粉', '粥', '馒头', '饺', '土豆', '红薯', '玉米', '杂粮'
+];
+
+const proteinWords = [
+  'chicken', 'beef', 'pork', 'fish', 'shrimp', 'prawn', 'egg', 'tofu', 'duck', 'lamb', 'mutton', 'turkey',
+  '鸡肉', '牛肉', '猪肉', '鱼', '虾', '鸡蛋', '豆腐', '鸭肉', '羊肉'
+];
+
+const veggieWords = [
+  'broccoli', 'lettuce', 'spinach', 'cabbage', 'carrot', 'onion', 'tomato', 'pepper', 'mushroom', 'cucumber',
+  'zucchini', 'aubergine', 'eggplant', 'greens', 'vegetable',
+  '西兰花', '生菜', '菠菜', '白菜', '胡萝卜', '洋葱', '番茄', '青椒', '菌菇', '黄瓜', '茄子', '蔬菜'
+];
 
 function pickOne(list) {
   return list[Math.floor(Math.random() * list.length)];
@@ -72,7 +106,7 @@ function buildCard(id, staple, protein, veggie, extra, quote, preferredFlavor) {
   };
 }
 
-function generateMeals(profile = {}, count = 4) {
+function generateMealsLocal(profile = {}, count = 4) {
   const preferredFlavor = profile.preferredFlavor || '随机';
   const tabooTags = profile.tabooTags || [];
 
@@ -98,7 +132,194 @@ function generateMeals(profile = {}, count = 4) {
   return shuffle(cards);
 }
 
+function includesAny(text, keywords = []) {
+  return keywords.some((key) => text.includes(key));
+}
+
+function toLowerText(parts = []) {
+  return parts
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+}
+
+function extractIngredients(meal = {}) {
+  const list = [];
+  for (let i = 1; i <= 20; i += 1) {
+    const key = `strIngredient${i}`;
+    const value = String(meal[key] || '').trim();
+    if (value) list.push(value);
+  }
+  return list;
+}
+
+function classifyIngredients(ingredients = []) {
+  const staple = [];
+  const protein = [];
+  const veggie = [];
+  const extra = [];
+
+  ingredients.forEach((row) => {
+    const lower = row.toLowerCase();
+    if (includesAny(lower, stapleWords)) {
+      staple.push(row);
+      return;
+    }
+    if (includesAny(lower, proteinWords)) {
+      protein.push(row);
+      return;
+    }
+    if (includesAny(lower, veggieWords)) {
+      veggie.push(row);
+      return;
+    }
+    extra.push(row);
+  });
+
+  return {
+    staple,
+    protein,
+    veggie,
+    extra
+  };
+}
+
+function buildRemoteTags(meal = {}) {
+  const text = toLowerText([meal.strMeal, meal.strCategory, meal.strArea, meal.strTags]);
+  const tags = ['均衡'];
+
+  if (includesAny(text, flavorKeywords.辛辣)) tags.push('辛辣', '下饭');
+  if (includesAny(text, flavorKeywords.清淡)) tags.push('清淡');
+  if (includesAny(text, flavorKeywords.轻食)) tags.push('轻食');
+  if (includesAny(text, flavorKeywords.浓香)) tags.push('浓香');
+  if (includesAny(text, flavorKeywords.下饭)) tags.push('下饭');
+
+  if (!tags.includes('清淡') && !tags.includes('辛辣')) {
+    tags.push('日常');
+  }
+
+  return Array.from(new Set(tags)).slice(0, 4);
+}
+
+function hitsTaboo(meal = {}, tabooTags = []) {
+  if (!tabooTags.length) return false;
+  const ingredients = extractIngredients(meal);
+  const text = toLowerText([meal.strMeal, meal.strCategory, meal.strTags, ...ingredients]);
+
+  return tabooTags.some((tag) => includesAny(text, tabooKeywords[tag] || []));
+}
+
+function matchPreferredFlavor(meal = {}, preferredFlavor = '随机') {
+  if (!preferredFlavor || preferredFlavor === '随机' || preferredFlavor === '均衡') return true;
+  const tags = buildRemoteTags(meal);
+  if (tags.includes(preferredFlavor)) return true;
+
+  const text = toLowerText([meal.strMeal, meal.strCategory, meal.strTags]);
+  return includesAny(text, flavorKeywords[preferredFlavor] || []);
+}
+
+function estimateRemoteCalories(tags = [], ingredients = []) {
+  let calories = 420;
+  if (tags.includes('轻食') || tags.includes('清淡')) calories -= 55;
+  if (tags.includes('浓香') || tags.includes('下饭')) calories += 70;
+  if (tags.includes('辛辣')) calories += 25;
+  calories += Math.min(90, ingredients.length * 8);
+  return Math.max(340, calories);
+}
+
+function buildRemoteReasons(tags = [], preferredFlavor) {
+  const reasons = ['来自在线菜谱库，减少重复感'];
+  if (preferredFlavor && preferredFlavor !== '随机') {
+    reasons.push(`贴近你的${preferredFlavor}口味`);
+  }
+  if (tags.includes('清淡') || tags.includes('轻食')) {
+    reasons.push('整体负担相对更轻');
+  } else {
+    reasons.push('满足感更强，适合工作日补能');
+  }
+  return reasons.slice(0, 3);
+}
+
+function pickFallbackLocalNames() {
+  return {
+    staple: pickOne(data.staples).name,
+    protein: pickOne(data.proteins).name,
+    veggie: pickOne(data.veggies).name,
+    extra: pickOne(data.extras).name
+  };
+}
+
+function buildRemoteCard(meal, quote, preferredFlavor, index) {
+  const ingredients = extractIngredients(meal);
+  const classified = classifyIngredients(ingredients);
+  const fallback = pickFallbackLocalNames();
+  const tags = buildRemoteTags(meal);
+
+  const staple = classified.staple[0] || fallback.staple;
+  const protein = classified.protein[0] || fallback.protein;
+  const veggie = classified.veggie[0] || fallback.veggie;
+  const extra = classified.extra[0] || fallback.extra;
+
+  const imageTag = tags.find((t) => data.coverByTag[t]) || '日常';
+  const image = data.coverByTag[imageTag] || '/assets/food/dish.jpg';
+
+  const safeQuote = quote || pickOne(data.quotes);
+  const title = meal.strMeal || `${protein} + ${staple}`;
+
+  return {
+    id: `meal_remote_${meal.idMeal || index + 1}`,
+    title,
+    dishLine: `${veggie} · ${extra}`,
+    staple,
+    protein,
+    veggie,
+    extra,
+    tags: tags.slice(0, 3),
+    calories: estimateRemoteCalories(tags, ingredients),
+    reasons: buildRemoteReasons(tags, preferredFlavor),
+    quote: safeQuote,
+    image,
+    shareText: `今天吃这个：${title}（${protein} + ${staple}），再配${veggie}。${safeQuote.text}`
+  };
+}
+
+async function generateMealsRemote(profile = {}, count = 4) {
+  const preferredFlavor = profile.preferredFlavor || '随机';
+  const tabooTags = profile.tabooTags || [];
+
+  const [meals, quotes] = await Promise.all([
+    remoteContent.fetchRandomMeals(Math.max(8, count * 3)),
+    remoteContent.fetchQuotes(Math.max(3, count))
+  ]);
+
+  if (!meals.length) return [];
+
+  const noTaboo = meals.filter((meal) => !hitsTaboo(meal, tabooTags));
+  const tabooSafe = noTaboo.length ? noTaboo : meals;
+
+  const flavorMatched = tabooSafe.filter((meal) => matchPreferredFlavor(meal, preferredFlavor));
+  const picked = shuffle(flavorMatched.length ? flavorMatched : tabooSafe).slice(0, count);
+
+  if (picked.length < count) return [];
+
+  return picked.map((meal, idx) => buildRemoteCard(meal, quotes[idx % quotes.length], preferredFlavor, idx));
+}
+
+async function generateMeals(profile = {}, count = 4) {
+  try {
+    const remoteCards = await generateMealsRemote(profile, count);
+    if (remoteCards.length >= count) {
+      return shuffle(remoteCards);
+    }
+  } catch (err) {
+    // network unavailable or blocked domains -> fallback to local pool
+  }
+
+  return generateMealsLocal(profile, count);
+}
+
 module.exports = {
   generateMeals,
+  generateMealsLocal,
   data
 };
