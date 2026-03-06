@@ -4,8 +4,14 @@
     <view class="subtitle">{{timeSlot}} · 先定吃什么，再自己选店</view>
 
     <view class="row meta-row">
-      <view class="source-line">轻决策模式 · 结构化推荐</view>
-      <view class="btn-secondary flavor-chip" bindtap="switchFlavor">口味：{{preferredFlavor}}</view>
+      <view class="source-line">{{activeMealMode}}模式 · 结构化推荐</view>
+    </view>
+
+    <view class="subtitle drift-hint">{{flavorDriftHint}}</view>
+
+    <view class="row control-row">
+      <view class="btn-secondary flavor-chip {{successAction === 'flavor' ? 'action-success' : ''}}" bindtap="switchFlavor">口味：{{preferredFlavor}}</view>
+      <view class="btn-secondary mode-chip {{successAction === 'mode' ? 'action-success' : ''}}" bindtap="switchMealMode">餐别：{{mealMode}}</view>
     </view>
   </view>
 
@@ -36,7 +42,7 @@
     >
       <block wx:for="{{cards}}" wx:key="id" wx:for-index="idx">
         <swiper-item>
-          <view class="poker-card" style="animation-delay: {{idx * 24}}ms;">
+          <view class="poker-card {{idx === currentCardIndex ? 'card-active' : 'card-side'}}" style="animation-delay: {{idx * 24}}ms;">
             <image class="poker-bg" src="{{item.image}}" mode="aspectFill"></image>
             <view class="poker-mask"></view>
 
@@ -51,7 +57,7 @@
                 </block>
               </view>
 
-              <view class="poker-meta">估算 {{item.calories}} kcal · 结构完整一餐</view>
+              <view class="poker-meta">估算 {{item.calories}} kcal · {{item.mealMode || activeMealMode}}策略</view>
               <view class="poker-reason">{{item.reasons.join(' · ')}}</view>
 
               <view class="quote-box">
@@ -68,20 +74,22 @@
 
     <view class="row action-row bottom-actions">
       <button
-        class="btn-secondary {{pressedAction === 'refresh' ? 'btn-pressed' : ''}}"
+        class="btn-secondary {{pressedAction === 'refresh' ? 'btn-pressed' : ''}} {{successAction === 'refresh' ? 'action-success' : ''}}"
         style="flex:1;"
         data-action="refresh"
         disabled="{{loading}}"
+        loading="{{loading && busyAction === 'refresh'}}"
         bindtouchstart="onPressAction"
         bindtouchend="onReleaseAction"
         bindtouchcancel="onReleaseAction"
         bindtap="refreshCards"
       >再翻一页</button>
       <button
-        class="btn-secondary {{pressedAction === 'flavor' ? 'btn-pressed' : ''}}"
+        class="btn-secondary {{pressedAction === 'flavor' ? 'btn-pressed' : ''}} {{successAction === 'flavor' ? 'action-success' : ''}}"
         style="flex:1;"
         data-action="flavor"
         disabled="{{loading}}"
+        loading="{{loading && busyAction === 'flavor'}}"
         bindtouchstart="onPressAction"
         bindtouchend="onReleaseAction"
         bindtouchcancel="onReleaseAction"
@@ -91,7 +99,7 @@
 
     <view class="row action-row bottom-actions-secondary">
       <button
-        class="btn-primary {{pressedAction === 'choose' ? 'btn-pressed' : ''}}"
+        class="btn-primary {{pressedAction === 'choose' ? 'btn-pressed' : ''}} {{successAction === 'choose' ? 'action-success' : ''}}"
         style="flex:1;"
         data-action="choose"
         disabled="{{loading}}"
@@ -101,7 +109,7 @@
         bindtap="pickCurrent"
       >今天吃这个</button>
       <button
-        class="btn-primary {{pressedAction === 'random' ? 'btn-pressed' : ''}}"
+        class="btn-primary {{pressedAction === 'random' ? 'btn-pressed' : ''}} {{successAction === 'random' ? 'action-success' : ''}}"
         style="flex:1;"
         data-action="random"
         disabled="{{loading}}"

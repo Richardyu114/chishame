@@ -1,5 +1,6 @@
 const data = require('./foodData');
 const remoteContent = require('./remoteContent');
+const personalize = require('./personalize');
 
 const flavorKeywords = {
   清淡: ['light', 'steam', 'steamed', 'salad', 'soup', 'boiled', '清淡', '蒸', '汤'],
@@ -283,6 +284,45 @@ function buildRemoteCard(meal, quote, preferredFlavor, index) {
   };
 }
 
+function applyMealMode(cards = [], activeMealMode = '午餐') {
+  return cards.map((card) => {
+    const reasons = Array.isArray(card.reasons) ? [...card.reasons] : [];
+    const next = { ...card };
+
+    if (activeMealMode === '午餐') {
+      next.calories = Math.max(320, Number(next.calories || 0) - 45);
+      reasons.push('午餐模式：口味更清爽');
+    } else if (activeMealMode === '晚餐') {
+      next.calories = Math.max(360, Number(next.calories || 0) + 35);
+      reasons.push('晚餐模式：满足感更强');
+    }
+
+    next.reasons = reasons.slice(0, 3);
+    next.mealMode = activeMealMode;
+    return next;
+  });
+}
+
+function applySevenDayDedupe(cards = [], logs = [], count = 4) {
+  if (!cards.length) return [];
+  const proteinSet = personalize.getRecentProteinSet(logs, 7);
+  if (!proteinSet.size) return shuffle(cards).slice(0, count);
+
+  const fresh = [];
+  const repeat = [];
+
+  cards.forEach((card) => {
+    const protein = String(card.protein || '').toLowerCase();
+    if (protein && proteinSet.has(protein)) {
+      repeat.push(card);
+      return;
+    }
+    fresh.push(card);
+  });
+
+  return shuffle([...fresh, ...repeat]).slice(0, count);
+}
+
 async function generateMealsRemote(profile = {}, count = 4) {
   const preferredFlavor = profile.preferredFlavor || '随机';
   const tabooTags = profile.tabooTags || [];
@@ -300,22 +340,28 @@ async function generateMealsRemote(profile = {}, count = 4) {
   const flavorMatched = tabooSafe.filter((meal) => matchPreferredFlavor(meal, preferredFlavor));
   const picked = shuffle(flavorMatched.length ? flavorMatched : tabooSafe).slice(0, count);
 
-  if (picked.length < count) return [];
+  if (!picked.length) return [];
 
-  return picked.map((meal, idx) => buildRemoteCard(meal, quotes[idx % quotes.length], preferredFlavor, idx));
+  return picked.map((meal, idx) => buildRemoteCard(meal, quotes[idx % Math.max(1, quotes.length)], preferredFlavor, idx));
 }
 
-async function generateMeals(profile = {}, count = 4) {
+async function generateMeals(profile = {}, count = 4, logs = []) {
+  const activeMealMode = profile.activeMealMode || personalize.resolveMealMode(profile.mealMode || '智能');
+  const expandedCount = Math.max(count + 3, 6);
+
   try {
-    const remoteCards = await generateMealsRemote(profile, count);
+    const remoteCards = await generateMealsRemote(profile, expandedCount);
     if (remoteCards.length >= count) {
-      return shuffle(remoteCards);
+      const modeCards = applyMealMode(remoteCards, activeMealMode);
+      return applySevenDayDedupe(modeCards, logs, count);
     }
   } catch (err) {
     // network unavailable or blocked domains -> fallback to local pool
   }
 
-  return generateMealsLocal(profile, count);
+  const localCards = generateMealsLocal(profile, expandedCount);
+  const modeCards = applyMealMode(localCards, activeMealMode);
+  return applySevenDayDedupe(modeCards, logs, count);
 }
 
 module.exports = {

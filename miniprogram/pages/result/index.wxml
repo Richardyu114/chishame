@@ -39,6 +39,11 @@
     <view class="subtitle">—— {{meal.quote.from}}</view>
   </view>
 
+  <view class="card share-meta-card">
+    <view class="subtitle">海报模板：{{posterTheme}} · 文案风格：{{copyStyle}}</view>
+    <view class="subtitle" style="margin-top: 6rpx;">支持“生成图片”或“直接分享到朋友圈”。</view>
+  </view>
+
   <view class="action-stack">
     <button class="btn-primary" bindtap="openMomentsActions" loading="{{generatingPoster}}" disabled="{{generatingPoster}}">{{generatingPoster ? '生成中...' : '分享到朋友圈'}}</button>
     <button class="btn-secondary" bindtap="copyShareText">复制分享文案</button>

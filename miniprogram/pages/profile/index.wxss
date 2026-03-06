@@ -15,6 +15,11 @@ button[size="mini"] {
   margin-top: 8rpx;
 }
 
+.drift-hint {
+  margin-top: 8rpx;
+  color: #7a7467;
+}
+
 .flavor-pill {
   display: inline-block;
   margin-top: 12rpx;

@@ -2,10 +2,16 @@
   <view class="card">
     <view class="title section-title">吃啥么设置</view>
     <view class="subtitle section-hint">口味和忌口会直接影响推荐结果</view>
+    <view class="subtitle drift-hint">{{flavorDriftHint}}</view>
 
     <view class="subtitle" style="margin-top: 14rpx;">偏好口味</view>
     <picker mode="selector" range="{{flavorOptions}}" value="{{flavorIndex}}" bindchange="onFlavorChange">
       <view class="btn-secondary flavor-pill">{{profile.preferredFlavor}}</view>
+    </picker>
+
+    <view class="subtitle" style="margin-top: 16rpx;">推荐餐别</view>
+    <picker mode="selector" range="{{mealModeOptions}}" value="{{mealModeIndex}}" bindchange="onMealModeChange">
+      <view class="btn-secondary flavor-pill">{{profile.mealMode || '智能'}}</view>
     </picker>
 
     <view class="subtitle" style="margin-top: 18rpx;">不吃/少吃</view>

@@ -8,6 +8,9 @@ const defaultProfile = {
   tasteTags: ['均衡', '日常'],
   tabooTags: [],
   quoteStyle: '经典',
+  mealMode: '智能',
+  shareCopyStyle: '克制版',
+  posterTheme: '极简',
   tasteWeights: {
     清淡: 0,
     均衡: 1,

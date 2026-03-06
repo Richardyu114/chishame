@@ -77,6 +77,11 @@
   color: #2f302d;
 }
 
+.share-meta-card {
+  padding-top: 18rpx;
+  padding-bottom: 18rpx;
+}
+
 .action-stack {
   display: flex;
   flex-direction: column;

@@ -1,5 +1,6 @@
 const storage = require('../../utils/storage');
 const foodEngine = require('../../utils/foodEngine');
+const personalize = require('../../utils/personalize');
 
 function getTimeSlot() {
   const hour = new Date().getHours();
@@ -10,6 +11,7 @@ function getTimeSlot() {
 }
 
 const flavorCycle = ['随机', '清淡', '均衡', '下饭', '浓香', '辛辣', '轻食'];
+const mealModeCycle = ['智能', '午餐', '晚餐'];
 
 Page({
   data: {
@@ -19,25 +21,48 @@ Page({
     loading: false,
     cardsVisible: true,
     pressedAction: '',
-    preferredFlavor: '随机'
+    successAction: '',
+    busyAction: '',
+    preferredFlavor: '随机',
+    mealMode: '智能',
+    activeMealMode: '午餐',
+    flavorDriftHint: '口味画像还在形成中，先多翻几页看看。'
   },
 
   onLoad() {
     this._loadToken = 0;
+    this._successTimer = null;
   },
 
   onShow() {
     const profile = storage.getProfile();
-    this.setData({ preferredFlavor: profile.preferredFlavor || '随机' });
+    const logs = storage.getLogs();
+    const activeMealMode = personalize.resolveMealMode(profile.mealMode || '智能');
+    const drift = personalize.buildFlavorDrift(logs);
+
+    this.setData({
+      preferredFlavor: profile.preferredFlavor || '随机',
+      mealMode: profile.mealMode || '智能',
+      activeMealMode,
+      flavorDriftHint: drift.text
+    });
     this.generateCards();
   },
 
   onHide() {
     this._loadToken += 1;
+    if (this._successTimer) {
+      clearTimeout(this._successTimer);
+      this._successTimer = null;
+    }
   },
 
   onUnload() {
     this._loadToken += 1;
+    if (this._successTimer) {
+      clearTimeout(this._successTimer);
+      this._successTimer = null;
+    }
   },
 
   onCardChange(e) {
@@ -50,6 +75,14 @@ Page({
 
   onReleaseAction() {
     this.setData({ pressedAction: '' });
+  },
+
+  markActionSuccess(action) {
+    if (this._successTimer) clearTimeout(this._successTimer);
+    this.setData({ successAction: action || '' });
+    this._successTimer = setTimeout(() => {
+      this.setData({ successAction: '' });
+    }, 380);
   },
 
   getCurrentCard() {
@@ -70,24 +103,37 @@ Page({
       .filter((url) => /^https?:\/\//.test(url));
 
     urls.forEach((src) => {
-      wx.getImageInfo({
-        src,
-        success: () => {},
-        fail: () => {}
-      });
+      wx.getImageInfo({ src, success: () => {}, fail: () => {} });
     });
   },
 
-  generateCards() {
+  buildEngineProfileAndHint() {
+    const profile = storage.getProfile();
+    const logs = storage.getLogs();
+    const activeMealMode = personalize.resolveMealMode(profile.mealMode || '智能');
+    const drift = personalize.buildFlavorDrift(logs);
+
+    return {
+      profile: {
+        ...profile,
+        activeMealMode
+      },
+      logs,
+      activeMealMode,
+      flavorDriftHint: drift.text
+    };
+  },
+
+  generateCards(triggerAction = '') {
     const startedAt = Date.now();
     const currentToken = startedAt;
     this._loadToken = currentToken;
-    this.setData({ loading: true });
+    this.setData({ loading: true, busyAction: triggerAction });
 
-    const profile = storage.getProfile();
+    const { profile, logs, activeMealMode, flavorDriftHint } = this.buildEngineProfileAndHint();
 
     foodEngine
-      .generateMeals(profile, 4)
+      .generateMeals(profile, 4, logs)
       .then((cards) => {
         if (this._loadToken !== currentToken) return;
 
@@ -102,9 +148,13 @@ Page({
           this.setData({
             cards: normalizedCards,
             loading: false,
+            busyAction: '',
             currentCardIndex: 0,
             cardsVisible: true,
-            preferredFlavor: profile.preferredFlavor || '随机'
+            preferredFlavor: profile.preferredFlavor || '随机',
+            mealMode: profile.mealMode || '智能',
+            activeMealMode,
+            flavorDriftHint
           });
         }, delay);
       })
@@ -113,9 +163,13 @@ Page({
         this.setData({
           cards: [],
           loading: false,
+          busyAction: '',
           currentCardIndex: 0,
           cardsVisible: true,
-          preferredFlavor: profile.preferredFlavor || '随机'
+          preferredFlavor: profile.preferredFlavor || '随机',
+          mealMode: profile.mealMode || '智能',
+          activeMealMode,
+          flavorDriftHint
         });
       });
   },
@@ -123,7 +177,8 @@ Page({
   refreshCards() {
     this.triggerLightHaptic();
     this.setData({ pressedAction: '', cardsVisible: false });
-    setTimeout(() => this.generateCards(), 140);
+    this.markActionSuccess('refresh');
+    setTimeout(() => this.generateCards('refresh'), 140);
   },
 
   switchFlavor() {
@@ -136,8 +191,24 @@ Page({
     profile.preferredFlavor = nextFlavor;
     storage.setProfile(profile);
     wx.showToast({ title: `口味：${nextFlavor}`, icon: 'none' });
+    this.markActionSuccess('flavor');
     this.setData({ preferredFlavor: nextFlavor, cardsVisible: false });
-    setTimeout(() => this.generateCards(), 140);
+    setTimeout(() => this.generateCards('flavor'), 140);
+  },
+
+  switchMealMode() {
+    this.triggerLightHaptic();
+    this.setData({ pressedAction: '' });
+    const profile = storage.getProfile();
+    const current = profile.mealMode || '智能';
+    const idx = mealModeCycle.indexOf(current);
+    const nextMode = mealModeCycle[(idx + 1 + mealModeCycle.length) % mealModeCycle.length];
+    profile.mealMode = nextMode;
+    storage.setProfile(profile);
+    wx.showToast({ title: `餐别：${nextMode}`, icon: 'none' });
+    this.markActionSuccess('mode');
+    this.setData({ mealMode: nextMode, cardsVisible: false });
+    setTimeout(() => this.generateCards('mode'), 140);
   },
 
   pickCurrent() {
@@ -145,6 +216,7 @@ Page({
     this.setData({ pressedAction: '' });
     const item = this.getCurrentCard();
     if (!item) return;
+    this.markActionSuccess('choose');
     this.chooseWithItem(item, 'choose');
   },
 
@@ -157,6 +229,7 @@ Page({
     const item = cards[randomIndex];
     this.setData({ currentCardIndex: randomIndex });
     wx.showToast({ title: '今日有口福', icon: 'none' });
+    this.markActionSuccess('random');
     this.chooseWithItem(item, 'random');
   },
 
@@ -174,6 +247,8 @@ Page({
       action,
       mealId: item.id,
       mealTitle: item.title,
+      protein: item.protein,
+      mealMode: item.mealMode || this.data.activeMealMode,
       tags: item.tags
     };
 

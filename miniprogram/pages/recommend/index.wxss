@@ -18,12 +18,26 @@
   margin-top: 16rpx;
 }
 
-.flavor-chip {
-  min-width: 198rpx;
+.control-row {
+  margin-top: 14rpx;
+  gap: 12rpx;
+}
+
+.flavor-chip,
+.mode-chip {
+  min-width: 190rpx;
   text-align: center;
   font-size: 22rpx;
   background: #f1ebe0;
   border-color: #d8cfbc;
+}
+
+.flavor-chip {
+  flex: 1;
+}
+
+.mode-chip {
+  flex: 1;
 }
 
 .source-line {
@@ -33,6 +47,11 @@
   background: rgba(198, 169, 105, 0.15);
   padding: 8rpx 14rpx;
   border-radius: 999rpx;
+}
+
+.drift-hint {
+  margin-top: 10rpx;
+  color: #7a7467;
 }
 
 .cards-wrap {
@@ -61,6 +80,19 @@
   background: #eceae4;
   box-shadow: 0 20rpx 44rpx rgba(40, 43, 39, 0.18);
   animation: cardIn 220ms ease both;
+  transition: transform 220ms ease, opacity 220ms ease, filter 220ms ease;
+}
+
+.card-active {
+  transform: scale(1);
+  opacity: 1;
+  filter: saturate(1);
+}
+
+.card-side {
+  transform: scale(0.965);
+  opacity: 0.9;
+  filter: saturate(0.85);
 }
 
 .poker-bg {
@@ -230,6 +262,10 @@
 .bottom-actions-secondary {
   margin-top: 10rpx;
   margin-bottom: 4rpx;
+}
+
+.action-success {
+  box-shadow: 0 0 0 2rpx rgba(198, 169, 105, 0.35) inset;
 }
 
 @keyframes cardIn {

@@ -1,7 +1,9 @@
 const storage = require('../../utils/storage');
+const personalize = require('../../utils/personalize');
 
 const flavorOptions = ['随机', '清淡', '均衡', '下饭', '浓香', '辛辣', '轻食'];
 const tabooOptions = ['海鲜', '牛肉', '豆制品', '鸡蛋', '生冷', '辛辣'];
+const mealModeOptions = ['智能', '午餐', '晚餐'];
 
 Page({
   data: {
@@ -9,14 +11,26 @@ Page({
     logs: [],
     flavorOptions,
     tabooOptions,
-    flavorIndex: 0
+    mealModeOptions,
+    flavorIndex: 0,
+    mealModeIndex: 0,
+    flavorDriftHint: '口味画像还在形成中，先多翻几页看看。'
   },
 
   hydrateView() {
     const profile = storage.getProfile();
     const logs = storage.getLogs().slice(0, 12);
     const flavorIndex = Math.max(0, flavorOptions.indexOf(profile.preferredFlavor || '随机'));
-    this.setData({ profile, logs, flavorIndex });
+    const mealModeIndex = Math.max(0, mealModeOptions.indexOf(profile.mealMode || '智能'));
+    const drift = personalize.buildFlavorDrift(storage.getLogs());
+
+    this.setData({
+      profile,
+      logs,
+      flavorIndex,
+      mealModeIndex,
+      flavorDriftHint: drift.text
+    });
   },
 
   onShow() {
@@ -27,6 +41,14 @@ Page({
     const idx = Number(e.detail.value);
     const profile = storage.getProfile();
     profile.preferredFlavor = flavorOptions[idx] || '随机';
+    storage.setProfile(profile);
+    this.hydrateView();
+  },
+
+  onMealModeChange(e) {
+    const idx = Number(e.detail.value);
+    const profile = storage.getProfile();
+    profile.mealMode = mealModeOptions[idx] || '智能';
     storage.setProfile(profile);
     this.hydrateView();
   },

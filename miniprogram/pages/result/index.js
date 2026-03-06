@@ -2,11 +2,87 @@ const storage = require('../../utils/storage');
 
 const POSTER_WIDTH = 750;
 const POSTER_HEIGHT = 1334;
+const posterThemes = ['极简', '国风', '夜色'];
+const copyStyles = ['克制版', '搞笑版', '文艺版'];
+const todaySigns = [
+  '宜：认真吃饭，别瞎对付。',
+  '宜：补充蛋白，下午更稳。',
+  '宜：蔬菜到位，身体会感谢你。',
+  '宜：少纠结，快做决定。',
+  '宜：今天好好吃一顿。'
+];
+
+function formatDate(date = new Date()) {
+  const y = date.getFullYear();
+  const m = `${date.getMonth() + 1}`.padStart(2, '0');
+  const d = `${date.getDate()}`.padStart(2, '0');
+  return `${y}.${m}.${d}`;
+}
+
+function getDateSeed(date = new Date()) {
+  return Number(formatDate(date).replace(/\./g, ''));
+}
+
+function composeShareText(meal, style = '克制版') {
+  if (!meal) return '吃啥么｜今天吃什么';
+  const quote = (meal.quote && meal.quote.text) || '民以食为天。';
+
+  if (style === '搞笑版') {
+    return `今日胃口发布会：${meal.title}。\n配菜是${meal.veggie}，补充${meal.extra}。\n我宣布，今天不纠结了。`;
+  }
+
+  if (style === '文艺版') {
+    return `今日餐案：${meal.title}，再配${meal.veggie}。\n${quote}\n—— 吃啥么`; 
+  }
+
+  return `今天吃这个：${meal.title}（${meal.protein} + ${meal.staple}），再配${meal.veggie}。`;
+}
+
+function getThemeTokens(theme = '极简') {
+  if (theme === '国风') {
+    return {
+      bg: '#F6F1E8',
+      overlay: 'rgba(62, 39, 17, 0.34)',
+      panel: '#FFF8EB',
+      panelBorder: '#E0D1B2',
+      title: '#4A3424',
+      body: '#6F5A45',
+      accent: '#B88945',
+      heroText: '#FFF9EE'
+    };
+  }
+
+  if (theme === '夜色') {
+    return {
+      bg: '#111319',
+      overlay: 'rgba(0, 0, 0, 0.46)',
+      panel: '#1A1E28',
+      panelBorder: '#2B3242',
+      title: '#F1F4FA',
+      body: '#AAB2C5',
+      accent: '#8DA9FF',
+      heroText: '#F4F7FF'
+    };
+  }
+
+  return {
+    bg: '#F7F6F2',
+    overlay: 'rgba(15, 16, 15, 0.30)',
+    panel: '#FCFBF8',
+    panelBorder: '#E6DFCE',
+    title: '#1F1F1F',
+    body: '#6B6B6B',
+    accent: '#C6A969',
+    heroText: '#FFFFFF'
+  };
+}
 
 Page({
   data: {
     meal: null,
-    generatingPoster: false
+    generatingPoster: false,
+    posterTheme: '极简',
+    copyStyle: '克制版'
   },
 
   onLoad() {
@@ -20,36 +96,33 @@ Page({
 
   onShow() {
     const meal = storage.getSelected();
-    this.setData({ meal });
+    const profile = storage.getProfile();
+    this.setData({
+      meal,
+      posterTheme: profile.posterTheme || '极简',
+      copyStyle: profile.shareCopyStyle || '克制版'
+    });
+  },
+
+  persistSharePreferences(next = {}) {
+    const profile = storage.getProfile();
+    const merged = { ...profile, ...next };
+    storage.setProfile(merged);
   },
 
   onShareAppMessage() {
     const meal = this.data.meal;
-    if (!meal) {
-      return {
-        title: '吃啥么｜今天吃什么',
-        path: '/pages/recommend/index'
-      };
-    }
-
     return {
-      title: meal.shareText || `今天吃这个：${meal.title}`,
+      title: composeShareText(meal, this.data.copyStyle),
       path: '/pages/recommend/index'
     };
   },
 
   onShareTimeline() {
     const meal = this.data.meal;
-    if (!meal) {
-      return {
-        title: '吃啥么｜今天吃什么',
-        query: 'from=timeline'
-      };
-    }
-
     return {
-      title: meal.shareText || `今天吃这个：${meal.title}`,
-      query: 'from=timeline'
+      title: composeShareText(meal, this.data.copyStyle),
+      query: `from=timeline&style=${encodeURIComponent(this.data.copyStyle)}`
     };
   },
 
@@ -65,7 +138,7 @@ Page({
     const meal = this.data.meal;
     if (!meal) return;
     wx.setClipboardData({
-      data: meal.shareText,
+      data: composeShareText(meal, this.data.copyStyle),
       success: () => {
         wx.showToast({ title: '分享文案已复制', icon: 'success' });
       }
@@ -77,18 +150,45 @@ Page({
     if (!meal) return;
 
     wx.showActionSheet({
-      itemList: ['生成分享图片', '直接分享到朋友圈'],
+      itemList: ['生成分享图片（可选模板）', '直接分享到朋友圈（可选文案）'],
       success: (res) => {
         if (res.tapIndex === 0) {
-          this.generatePoster();
+          this.choosePosterThemeThenGenerate();
           return;
         }
+        this.chooseCopyStyleThenShare();
+      }
+    });
+  },
+
+  choosePosterThemeThenGenerate() {
+    wx.showActionSheet({
+      itemList: posterThemes,
+      success: (res) => {
+        const nextTheme = posterThemes[res.tapIndex] || '极简';
+        this.setData({ posterTheme: nextTheme });
+        this.persistSharePreferences({ posterTheme: nextTheme });
+        this.generatePoster();
+      }
+    });
+  },
+
+  chooseCopyStyleThenShare() {
+    wx.showActionSheet({
+      itemList: copyStyles,
+      success: (res) => {
+        const nextStyle = copyStyles[res.tapIndex] || '克制版';
+        this.setData({ copyStyle: nextStyle });
+        this.persistSharePreferences({ shareCopyStyle: nextStyle });
         this.shareToMomentsDirectly();
       }
     });
   },
 
   shareToMomentsDirectly() {
+    const meal = this.data.meal;
+    const shareText = composeShareText(meal, this.data.copyStyle);
+
     if (typeof wx !== 'undefined' && typeof wx.showShareMenu === 'function') {
       wx.showShareMenu({
         withShareTicket: true,
@@ -96,11 +196,24 @@ Page({
       });
     }
 
-    wx.showModal({
-      title: '分享到朋友圈',
-      content: '请点击右上角“···”并选择“分享到朋友圈”。\n已为你准备好分享文案。',
-      confirmText: '知道了',
-      showCancel: false
+    wx.setClipboardData({
+      data: shareText,
+      success: () => {
+        wx.showModal({
+          title: '分享到朋友圈',
+          content: `文案已复制（${this.data.copyStyle}）。\n请点击右上角“···”并选择“分享到朋友圈”。`,
+          confirmText: '知道了',
+          showCancel: false
+        });
+      },
+      fail: () => {
+        wx.showModal({
+          title: '分享到朋友圈',
+          content: '请点击右上角“···”并选择“分享到朋友圈”。',
+          confirmText: '知道了',
+          showCancel: false
+        });
+      }
     });
   },
 
@@ -113,7 +226,7 @@ Page({
     wx.showLoading({ title: '正在生成图片', mask: true });
 
     this.getImagePath(meal.image)
-      .then((imagePath) => this.drawPoster(meal, imagePath))
+      .then((imagePath) => this.drawPoster(meal, imagePath, this.data.posterTheme))
       .then((tempPath) => this.savePosterToAlbum(tempPath))
       .catch((err) => {
         const message = err && err.message ? err.message : String(err || 'unknown error');
@@ -140,40 +253,54 @@ Page({
     });
   },
 
-  drawPoster(meal, imagePath) {
+  buildTodaySign(meal) {
+    if (meal && meal.quote && meal.quote.text) {
+      const clean = String(meal.quote.text).replace(/[。！!？?]$/, '');
+      return `今日签：${clean}`;
+    }
+    const index = getDateSeed() % todaySigns.length;
+    return `今日签：${todaySigns[index]}`;
+  },
+
+  drawPoster(meal, imagePath, theme = '极简') {
     return new Promise((resolve, reject) => {
+      const tokens = getThemeTokens(theme);
       const ctx = wx.createCanvasContext('sharePosterCanvas', this);
+      const dateText = formatDate(new Date());
+      const signText = this.buildTodaySign(meal);
 
       // Background
-      ctx.setFillStyle('#F7F6F2');
+      ctx.setFillStyle(tokens.bg);
       ctx.fillRect(0, 0, POSTER_WIDTH, POSTER_HEIGHT);
 
       // Cover area
       ctx.drawImage(imagePath, 0, 0, POSTER_WIDTH, 780);
-      ctx.setFillStyle('rgba(15, 16, 15, 0.30)');
-      ctx.fillRect(0, 520, POSTER_WIDTH, 260);
+      ctx.setFillStyle(tokens.overlay);
+      ctx.fillRect(0, 500, POSTER_WIDTH, 280);
 
       // Brand + title
-      ctx.setFillStyle('#FCFBF8');
+      ctx.setFillStyle(tokens.heroText);
       ctx.setFontSize(30);
-      ctx.fillText('吃啥么 · 今日定案', 40, 600);
+      ctx.fillText(`吃啥么 · ${theme}模板`, 40, 590);
 
-      ctx.setFillStyle('#FFFFFF');
+      ctx.setFontSize(24);
+      ctx.fillText(dateText, 40, 632);
+
       ctx.setFontSize(46);
       const title = meal.title || '今天吃这个';
-      this.drawWrappedText(ctx, title, 40, 660, 670, 56, 2);
+      this.drawWrappedText(ctx, title, 40, 690, 670, 56, 2);
 
       // Info card
-      ctx.setFillStyle('#FCFBF8');
-      ctx.fillRect(30, 820, 690, 360);
-      ctx.setStrokeStyle('#E6DFCE');
-      ctx.strokeRect(30, 820, 690, 360);
+      ctx.setFillStyle(tokens.panel);
+      ctx.fillRect(30, 820, 690, 390);
+      ctx.setStrokeStyle(tokens.panelBorder);
+      ctx.strokeRect(30, 820, 690, 390);
 
-      ctx.setFillStyle('#1F1F1F');
+      ctx.setFillStyle(tokens.title);
       ctx.setFontSize(30);
       ctx.fillText('这一餐结构', 60, 878);
 
-      ctx.setFillStyle('#6B6B6B');
+      ctx.setFillStyle(tokens.body);
       ctx.setFontSize(26);
       const lines = [
         `主食：${meal.staple || '-'}`,
@@ -187,14 +314,18 @@ Page({
         ctx.fillText(line, 60, 930 + idx * 50);
       });
 
-      // Quote
-      ctx.setFillStyle('#2F5D50');
-      ctx.setFontSize(26);
-      this.drawWrappedText(ctx, `“${(meal.quote && meal.quote.text) || '民以食为天。'}”`, 40, 1230, 670, 40, 2);
+      ctx.setFillStyle(tokens.accent);
+      ctx.setFontSize(24);
+      this.drawWrappedText(ctx, signText, 60, 1188, 630, 36, 2);
 
-      ctx.setFillStyle('#C6A969');
+      // Quote
+      ctx.setFillStyle(tokens.title);
+      ctx.setFontSize(25);
+      this.drawWrappedText(ctx, `“${(meal.quote && meal.quote.text) || '民以食为天。'}”`, 40, 1268, 670, 38, 2);
+
+      ctx.setFillStyle(tokens.accent);
       ctx.setFontSize(22);
-      ctx.fillText((meal.quote && meal.quote.from) || '《汉书》', 40, 1304);
+      ctx.fillText((meal.quote && meal.quote.from) || '《汉书》', 40, 1320);
 
       ctx.draw(false, () => {
         wx.canvasToTempFilePath(
@@ -252,7 +383,7 @@ Page({
         success: () => {
           wx.showModal({
             title: '图片已保存',
-            content: '已保存到相册，可直接去朋友圈发图。',
+            content: `已保存到相册（${this.data.posterTheme}模板），可直接去朋友圈发图。`,
             confirmText: '去发朋友圈',
             cancelText: '稍后',
             success: () => resolve()
