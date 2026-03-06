@@ -40,10 +40,13 @@
   </view>
 
   <view class="action-stack">
-    <button class="btn-primary" bindtap="copyShareText">复制分享文案</button>
+    <button class="btn-primary" bindtap="openMomentsActions" loading="{{generatingPoster}}" disabled="{{generatingPoster}}">{{generatingPoster ? '生成中...' : '分享到朋友圈'}}</button>
+    <button class="btn-secondary" bindtap="copyShareText">复制分享文案</button>
     <button class="btn-secondary" bindtap="pickAgain">再翻一页</button>
     <button class="btn-secondary" bindtap="toRecommend">回推荐页</button>
   </view>
+
+  <canvas canvas-id="sharePosterCanvas" class="poster-canvas"></canvas>
 </view>
 
 <view class="container" wx:else>
