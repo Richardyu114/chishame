@@ -32,6 +32,14 @@ Page({
     this.generateCards();
   },
 
+  onHide() {
+    this._loadToken += 1;
+  },
+
+  onUnload() {
+    this._loadToken += 1;
+  },
+
   onCardChange(e) {
     this.setData({ currentCardIndex: Number(e.detail.current || 0) });
   },
@@ -49,6 +57,27 @@ Page({
     return this.data.cards[idx] || null;
   },
 
+  triggerLightHaptic() {
+    if (typeof wx === 'undefined' || typeof wx.vibrateShort !== 'function') return;
+    wx.vibrateShort({ type: 'light', fail: () => {} });
+  },
+
+  preloadCardImages(cards = []) {
+    const urls = cards
+      .map((item) => item && item.image)
+      .filter(Boolean)
+      .slice(0, 2)
+      .filter((url) => /^https?:\/\//.test(url));
+
+    urls.forEach((src) => {
+      wx.getImageInfo({
+        src,
+        success: () => {},
+        fail: () => {}
+      });
+    });
+  },
+
   generateCards() {
     const startedAt = Date.now();
     const currentToken = startedAt;
@@ -62,13 +91,16 @@ Page({
       .then((cards) => {
         if (this._loadToken !== currentToken) return;
 
+        const normalizedCards = Array.isArray(cards) ? cards : [];
+        this.preloadCardImages(normalizedCards);
+
         const minLoading = 180;
         const delay = Math.max(0, minLoading - (Date.now() - startedAt));
 
         setTimeout(() => {
           if (this._loadToken !== currentToken) return;
           this.setData({
-            cards: Array.isArray(cards) ? cards : [],
+            cards: normalizedCards,
             loading: false,
             currentCardIndex: 0,
             cardsVisible: true,
@@ -89,11 +121,13 @@ Page({
   },
 
   refreshCards() {
+    this.triggerLightHaptic();
     this.setData({ pressedAction: '', cardsVisible: false });
     setTimeout(() => this.generateCards(), 140);
   },
 
   switchFlavor() {
+    this.triggerLightHaptic();
     this.setData({ pressedAction: '' });
     const profile = storage.getProfile();
     const current = profile.preferredFlavor || '随机';
@@ -107,6 +141,7 @@ Page({
   },
 
   pickCurrent() {
+    this.triggerLightHaptic();
     this.setData({ pressedAction: '' });
     const item = this.getCurrentCard();
     if (!item) return;
@@ -114,13 +149,14 @@ Page({
   },
 
   randomOne() {
+    this.triggerLightHaptic();
     this.setData({ pressedAction: '' });
     const cards = this.data.cards;
     if (!cards.length) return;
     const randomIndex = Math.floor(Math.random() * cards.length);
     const item = cards[randomIndex];
     this.setData({ currentCardIndex: randomIndex });
-    wx.showToast({ title: '天意已定', icon: 'none' });
+    wx.showToast({ title: '今日有口福', icon: 'none' });
     this.chooseWithItem(item, 'random');
   },
 

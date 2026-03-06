@@ -1,10 +1,10 @@
 <view class="container recommend-page">
   <view class="card top-bar">
-    <view class="title" style="font-size: 40rpx;">今天吃什么</view>
+    <view class="title top-title">今天吃什么</view>
     <view class="subtitle">{{timeSlot}} · 先定吃什么，再自己选店</view>
 
-    <view class="row" style="margin-top: 14rpx;">
-      <view class="source-line">科学膳食结构随机</view>
+    <view class="row meta-row">
+      <view class="source-line">轻决策模式 · 结构化推荐</view>
       <view class="btn-secondary flavor-chip" bindtap="switchFlavor">口味：{{preferredFlavor}}</view>
     </view>
   </view>
@@ -31,6 +31,8 @@
       previous-margin="36rpx"
       next-margin="36rpx"
       circular="{{cards.length > 1}}"
+      duration="280"
+      skip-hidden-item-layout="{{true}}"
     >
       <block wx:for="{{cards}}" wx:key="id" wx:for-index="idx">
         <swiper-item>
@@ -74,7 +76,7 @@
         bindtouchend="onReleaseAction"
         bindtouchcancel="onReleaseAction"
         bindtap="refreshCards"
-      >换一组</button>
+      >再翻一页</button>
       <button
         class="btn-secondary {{pressedAction === 'flavor' ? 'btn-pressed' : ''}}"
         style="flex:1;"
@@ -84,7 +86,7 @@
         bindtouchend="onReleaseAction"
         bindtouchcancel="onReleaseAction"
         bindtap="switchFlavor"
-      >换个口味</button>
+      >换个风味</button>
     </view>
 
     <view class="row action-row bottom-actions-secondary">
@@ -107,7 +109,7 @@
         bindtouchend="onReleaseAction"
         bindtouchcancel="onReleaseAction"
         bindtap="randomOne"
-      >看天意</button>
+      >交给口福</button>
     </view>
   </view>
 </view>

@@ -1,13 +1,15 @@
-<view class="container" wx:if="{{profile}}">
+<view class="container profile-page" wx:if="{{profile}}">
   <view class="card">
-    <view class="title" style="font-size: 34rpx;">吃啥么设置</view>
-    <view class="subtitle">偏好口味</view>
+    <view class="title section-title">吃啥么设置</view>
+    <view class="subtitle section-hint">口味和忌口会直接影响推荐结果</view>
+
+    <view class="subtitle" style="margin-top: 14rpx;">偏好口味</view>
     <picker mode="selector" range="{{flavorOptions}}" value="{{flavorIndex}}" bindchange="onFlavorChange">
-      <view class="btn-secondary" style="display:inline-block; margin-top:12rpx;">{{profile.preferredFlavor}}</view>
+      <view class="btn-secondary flavor-pill">{{profile.preferredFlavor}}</view>
     </picker>
 
     <view class="subtitle" style="margin-top: 18rpx;">不吃/少吃</view>
-    <view style="margin-top: 10rpx;">
+    <view class="taboo-wrap">
       <block wx:for="{{tabooOptions}}" wx:key="*this">
         <text class="tag {{profile.tabooTags.includes(item) ? 'active' : ''}}" data-tag="{{item}}" bindtap="toggleTaboo">{{item}}</text>
       </block>
@@ -15,8 +17,8 @@
   </view>
 
   <view class="card">
-    <view class="row">
-      <view class="title" style="font-size: 34rpx;">最近记录</view>
+    <view class="row log-head">
+      <view class="title section-title">最近记录</view>
       <button size="mini" class="btn-secondary" bindtap="clearLogs">清空</button>
     </view>
 
@@ -25,8 +27,8 @@
     </block>
 
     <block wx:for="{{logs}}" wx:key="ts">
-      <view style="margin-top: 12rpx; border-bottom: 1rpx solid #f3f4f6; padding-bottom: 10rpx;">
-        <view>{{item.mealTitle || item.placeName}} · {{item.action}}</view>
+      <view class="log-item">
+        <view class="log-title">{{item.mealTitle || item.placeName}} · {{item.action}}</view>
         <view class="subtitle">{{item.tags ? item.tags.join('、') : ''}}</view>
       </view>
     </block>

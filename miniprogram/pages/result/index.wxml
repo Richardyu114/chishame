@@ -1,32 +1,49 @@
-<view class="container" wx:if="{{meal}}">
+<view class="container result-page" wx:if="{{meal}}">
   <view class="card result-hero">
     <image class="cover" src="{{meal.image}}" mode="aspectFill"></image>
     <view class="mask"></view>
     <view class="hero-content">
-      <view class="title">定了，今天吃这个</view>
+      <view class="hero-badge">今日定案</view>
       <view class="meal-title">{{meal.title}}</view>
-      <view class="subtitle" style="color:#f3f4f6;">{{meal.dishLine}}</view>
+      <view class="subtitle hero-subtitle">{{meal.dishLine}}</view>
     </view>
   </view>
 
   <view class="card">
-    <view class="title" style="font-size: 32rpx;">这一餐结构</view>
-    <view class="subtitle">主食：{{meal.staple}}</view>
-    <view class="subtitle">蛋白：{{meal.protein}}</view>
-    <view class="subtitle">蔬菜：{{meal.veggie}}</view>
-    <view class="subtitle">补充：{{meal.extra}}</view>
-    <view class="subtitle" style="margin-top:10rpx;">估算热量：{{meal.calories}} kcal</view>
+    <view class="title section-title">这一餐结构</view>
+    <view class="info-row">
+      <view class="info-key">主食</view>
+      <view class="info-value">{{meal.staple}}</view>
+    </view>
+    <view class="info-row">
+      <view class="info-key">蛋白</view>
+      <view class="info-value">{{meal.protein}}</view>
+    </view>
+    <view class="info-row">
+      <view class="info-key">蔬菜</view>
+      <view class="info-value">{{meal.veggie}}</view>
+    </view>
+    <view class="info-row">
+      <view class="info-key">补充</view>
+      <view class="info-value">{{meal.extra}}</view>
+    </view>
+    <view class="info-row">
+      <view class="info-key">估算热量</view>
+      <view class="info-value">{{meal.calories}} kcal</view>
+    </view>
   </view>
 
   <view class="card">
-    <view class="title" style="font-size: 32rpx;">今日语录</view>
+    <view class="title section-title">今日语录</view>
     <view class="quote">“{{meal.quote.text}}”</view>
     <view class="subtitle">—— {{meal.quote.from}}</view>
   </view>
 
-  <button class="btn-primary" bindtap="copyShareText">复制分享文案</button>
-  <button class="btn-secondary" style="margin-top: 14rpx;" bindtap="pickAgain">换一个</button>
-  <button class="btn-secondary" style="margin-top: 14rpx;" bindtap="toRecommend">回推荐页</button>
+  <view class="action-stack">
+    <button class="btn-primary" bindtap="copyShareText">复制分享文案</button>
+    <button class="btn-secondary" bindtap="pickAgain">再翻一页</button>
+    <button class="btn-secondary" bindtap="toRecommend">回推荐页</button>
+  </view>
 </view>
 
 <view class="container" wx:else>

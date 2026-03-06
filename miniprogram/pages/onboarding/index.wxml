@@ -1,6 +1,6 @@
-<view class="container">
-  <view class="card">
-    <view class="title">吃啥么</view>
+<view class="container onboarding-page">
+  <view class="card brand-card">
+    <view class="title brand-title">吃啥么</view>
     <view class="subtitle">不纠结去哪吃，先帮你定今天吃什么</view>
   </view>
 
@@ -8,7 +8,7 @@
     <view class="title" style="font-size: 32rpx;">口味偏好</view>
     <view class="subtitle">先选一个默认风格，后面可随时改</view>
     <picker mode="selector" range="{{flavors}}" value="{{flavorIndex}}" bindchange="onFlavorChange">
-      <view class="btn-secondary" style="display:inline-block; margin-top:14rpx;">{{flavors[flavorIndex]}}</view>
+      <view class="btn-secondary picker-pill">{{flavors[flavorIndex]}}</view>
     </picker>
   </view>
 
@@ -21,5 +21,6 @@
     </view>
   </view>
 
-  <button class="btn-primary" bindtap="saveAndStart">开始抽今天吃什么</button>
+  <button class="btn-primary start-btn" bindtap="saveAndStart">开始抽今天吃什么</button>
+  <view class="tiny-note">少做选择，吃得更好</view>
 </view>

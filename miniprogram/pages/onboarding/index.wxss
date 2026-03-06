@@ -1,1 +1,30 @@
-/* onboarding page style inherits app.wxss */
+.onboarding-page {
+  min-height: 100vh;
+}
+
+.brand-card {
+  background: linear-gradient(150deg, #fcfbf8, #f2eee3);
+  border-color: #e7decb;
+}
+
+.brand-title {
+  font-size: 44rpx;
+}
+
+.picker-pill {
+  display: inline-block;
+  margin-top: 14rpx;
+  min-width: 180rpx;
+  text-align: center;
+}
+
+.start-btn {
+  margin-top: 6rpx;
+}
+
+.tiny-note {
+  margin-top: 14rpx;
+  font-size: 22rpx;
+  text-align: center;
+  color: #7b776d;
+}

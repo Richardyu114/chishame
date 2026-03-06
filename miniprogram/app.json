@@ -7,15 +7,16 @@
   ],
   "window": {
     "navigationBarTitleText": "吃啥么",
-    "navigationBarBackgroundColor": "#FFFFFF",
+    "navigationBarBackgroundColor": "#F7F6F2",
     "navigationBarTextStyle": "black",
-    "backgroundTextStyle": "light"
+    "backgroundTextStyle": "light",
+    "backgroundColor": "#F7F6F2"
   },
   "tabBar": {
-    "color": "#6b7280",
-    "selectedColor": "#f97316",
-    "backgroundColor": "#ffffff",
-    "borderStyle": "black",
+    "color": "#6B6B6B",
+    "selectedColor": "#2F5D50",
+    "backgroundColor": "#F7F6F2",
+    "borderStyle": "white",
     "list": [
       {
         "pagePath": "pages/recommend/index",

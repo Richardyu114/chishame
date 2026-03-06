@@ -1,8 +1,12 @@
+.result-page {
+  min-height: 100vh;
+}
+
 .result-hero {
-  height: 420rpx;
+  height: 438rpx;
   position: relative;
   overflow: hidden;
-  border-radius: 24rpx;
+  border-radius: 30rpx;
   padding: 0;
 }
 
@@ -16,7 +20,7 @@
 .mask {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.66));
+  background: linear-gradient(180deg, rgba(18, 20, 18, 0.14), rgba(20, 22, 20, 0.72));
 }
 
 .hero-content {
@@ -27,13 +31,54 @@
   color: #fff;
 }
 
+.hero-badge {
+  display: inline-block;
+  border-radius: 999rpx;
+  padding: 5rpx 13rpx;
+  background: rgba(198, 169, 105, 0.26);
+  border: 1rpx solid rgba(224, 198, 142, 0.6);
+  font-size: 20rpx;
+}
+
 .meal-title {
-  margin-top: 8rpx;
+  margin-top: 10rpx;
   font-size: 40rpx;
   font-weight: 700;
 }
 
+.hero-subtitle {
+  margin-top: 8rpx;
+  color: rgba(248, 248, 246, 0.94);
+}
+
+.section-title {
+  font-size: 32rpx;
+}
+
+.info-row {
+  margin-top: 12rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.info-key {
+  color: #6b6b6b;
+}
+
+.info-value {
+  color: #1f1f1f;
+  font-weight: 600;
+}
+
 .quote {
   margin-top: 12rpx;
-  line-height: 1.6;
+  line-height: 1.66;
+  color: #2f302d;
+}
+
+.action-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14rpx;
 }

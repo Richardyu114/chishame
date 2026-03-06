@@ -1,19 +1,29 @@
+/*
+  Chishame Design Tokens (v0.5)
+  - Background: #F7F6F2
+  - Text: #1F1F1F
+  - Muted: #6B6B6B
+  - Primary: #2F5D50
+  - Accent: #C6A969
+*/
+
 page {
-  background: #ffffff;
-  color: #1f2937;
+  background: #f7f6f2;
+  color: #1f1f1f;
   font-size: 28rpx;
 }
 
 .container {
   padding: 24rpx;
+  padding-bottom: 34rpx;
 }
 
 .card {
-  background: #ffffff;
-  border-radius: 24rpx;
+  background: #fcfbf8;
+  border-radius: 28rpx;
   padding: 24rpx;
-  border: 1rpx solid #f3f4f6;
-  box-shadow: 0 10rpx 24rpx rgba(15, 23, 42, 0.06);
+  border: 1rpx solid #ece8dd;
+  box-shadow: 0 12rpx 30rpx rgba(47, 53, 46, 0.08);
   margin-bottom: 20rpx;
 }
 
@@ -24,27 +34,47 @@ page {
 }
 
 .subtitle {
-  color: #6b7280;
+  color: #6b6b6b;
   margin-top: 8rpx;
   font-size: 24rpx;
 }
 
+button {
+  line-height: 1.2;
+  border: none;
+  transition: transform 120ms ease, filter 120ms ease, box-shadow 120ms ease, opacity 120ms ease;
+}
+
+button::after {
+  border: none;
+}
+
+button[disabled] {
+  opacity: 0.62;
+  filter: saturate(0.75);
+}
+
+.btn-pressed {
+  transform: scale(0.97);
+  filter: brightness(0.96);
+}
+
 .btn-primary {
-  background: #f97316;
+  background: #2f5d50;
   color: #fff;
   border-radius: 999rpx;
-  padding: 16rpx 24rpx;
+  padding: 18rpx 24rpx;
   text-align: center;
-  border: none;
-  box-shadow: 0 10rpx 20rpx rgba(249, 115, 22, 0.25);
+  border: 1rpx solid #2a5146;
+  box-shadow: 0 10rpx 20rpx rgba(47, 93, 80, 0.24);
 }
 
 .btn-secondary {
-  background: #fff7ed;
-  color: #ea580c;
-  border: 2rpx solid #fdba74;
+  background: #f2efe7;
+  color: #2f5d50;
+  border: 1rpx solid #dbd3c1;
   border-radius: 999rpx;
-  padding: 14rpx 24rpx;
+  padding: 16rpx 24rpx;
   text-align: center;
 }
 
@@ -52,16 +82,18 @@ page {
   display: inline-block;
   padding: 8rpx 16rpx;
   border-radius: 999rpx;
-  background: #fff1e8;
-  color: #9a3412;
+  background: #f3efe5;
+  color: #5f5a4f;
+  border: 1rpx solid #e4ddcd;
   margin-right: 10rpx;
   margin-bottom: 10rpx;
   font-size: 22rpx;
 }
 
 .tag.active {
-  background: #f97316;
+  background: #2f5d50;
   color: #fff;
+  border-color: #2a5146;
 }
 
 .row {
@@ -71,5 +103,5 @@ page {
 }
 
 .muted {
-  color: #6b7280;
+  color: #6b6b6b;
 }
