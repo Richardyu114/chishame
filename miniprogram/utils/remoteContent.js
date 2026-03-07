@@ -1,6 +1,10 @@
 const RANDOM_MEAL_API = 'https://www.themealdb.com/api/json/v1/1/random.php';
 const CLASSIC_QUOTE_API = 'https://v1.jinrishici.com/all.json';
-const DEFAULT_TIMEOUT = 4500;
+const DEFAULT_TIMEOUT = 2200;
+
+const foodQuoteKeywords = [
+  '食', '饭', '饥', '饱', '味', '羹', '菜', '酒', '茶', '厨', '烹', '炊', '馔', '粥', '肴', '饼'
+];
 
 function requestJSON(url, timeout = DEFAULT_TIMEOUT) {
   return new Promise((resolve, reject) => {
@@ -50,12 +54,17 @@ async function fetchRandomMeals(count = 8) {
   return dedup;
 }
 
+function isFoodRelatedQuote(text = '') {
+  if (!text) return false;
+  return foodQuoteKeywords.some((word) => text.includes(word));
+}
+
 function normalizeQuote(raw = {}) {
   const text = String(raw.content || '').trim();
   const origin = String(raw.origin || '').trim();
   const author = String(raw.author || '').trim();
 
-  if (!text) return null;
+  if (!text || !isFoodRelatedQuote(text)) return null;
 
   const from = [origin ? `《${origin}》` : '', author].filter(Boolean).join(' · ') || '古诗文';
   return { text, from };
@@ -67,7 +76,8 @@ async function fetchQuote() {
 }
 
 async function fetchQuotes(count = 4) {
-  const tasks = Array.from({ length: Math.max(1, count) }).map(() =>
+  const tries = Math.max(4, count * 4);
+  const tasks = Array.from({ length: tries }).map(() =>
     fetchQuote().catch(() => null)
   );
   const rows = await Promise.all(tasks);
@@ -80,7 +90,7 @@ async function fetchQuotes(count = 4) {
     dedup.push(item);
   });
 
-  return dedup;
+  return dedup.slice(0, Math.max(1, count));
 }
 
 module.exports = {

@@ -29,6 +29,16 @@ const proteinWords = [
   '鸡肉', '牛肉', '猪肉', '鱼', '虾', '鸡蛋', '豆腐', '鸭肉', '羊肉'
 ];
 
+const imageKeywordMap = [
+  { keywords: ['noodle', 'pasta', 'ramen', '面', '粉'], image: '/assets/food/noodle.jpg' },
+  { keywords: ['sushi', 'fish', 'shrimp', 'prawn', 'seafood', '寿司', '鱼', '虾', '海鲜'], image: '/assets/food/sushi.jpg' },
+  { keywords: ['spicy', 'chili', 'pepper', 'curry', 'hot', '辣', '麻辣', '咖喱'], image: '/assets/food/spicy.jpg' },
+  { keywords: ['hotpot', 'stew', 'braised', 'roast', '锅', '炖', '红烧'], image: '/assets/food/hotpot.jpg' },
+  { keywords: ['salad', 'vegetable', 'veggie', 'light', '轻食', '蔬菜', '沙拉'], image: '/assets/food/salad.jpg' }
+];
+
+const REMOTE_BUDGET_MS = 1600;
+
 const veggieWords = [
   'broccoli', 'lettuce', 'spinach', 'cabbage', 'carrot', 'onion', 'tomato', 'pepper', 'mushroom', 'cucumber',
   'zucchini', 'aubergine', 'eggplant', 'greens', 'vegetable',
@@ -87,8 +97,12 @@ function buildCard(id, staple, protein, veggie, extra, quote, preferredFlavor) {
     ...(veggie.tags || [])
   ])).slice(0, 3);
 
-  const imageTag = tags.find((t) => data.coverByTag[t]) || '日常';
-  const image = data.coverByTag[imageTag] || '/assets/food/dish.jpg';
+  const image = pickCardImage([
+    staple.name,
+    protein.name,
+    veggie.name,
+    extra.name
+  ], tags, '/assets/food/dish.jpg');
 
   return {
     id: `meal_${id}`,
@@ -142,6 +156,15 @@ function toLowerText(parts = []) {
     .filter(Boolean)
     .join(' ')
     .toLowerCase();
+}
+
+function pickCardImage(parts = [], tags = [], fallback = '/assets/food/dish.jpg') {
+  const text = toLowerText(parts);
+  const byKeyword = imageKeywordMap.find((row) => includesAny(text, row.keywords));
+  if (byKeyword) return byKeyword.image;
+
+  const imageTag = tags.find((t) => data.coverByTag[t]) || '日常';
+  return data.coverByTag[imageTag] || fallback;
 }
 
 function extractIngredients(meal = {}) {
@@ -261,8 +284,14 @@ function buildRemoteCard(meal, quote, preferredFlavor, index) {
   const veggie = classified.veggie[0] || fallback.veggie;
   const extra = classified.extra[0] || fallback.extra;
 
-  const imageTag = tags.find((t) => data.coverByTag[t]) || '日常';
-  const image = data.coverByTag[imageTag] || '/assets/food/dish.jpg';
+  const image = /^https?:\/\//.test(meal.strMealThumb || '')
+    ? meal.strMealThumb
+    : pickCardImage([
+      meal.strMeal,
+      meal.strCategory,
+      meal.strArea,
+      ...ingredients
+    ], tags, '/assets/food/dish.jpg');
 
   const safeQuote = quote || pickOne(data.quotes);
   const title = meal.strMeal || `${protein} + ${staple}`;
@@ -323,12 +352,19 @@ function applySevenDayDedupe(cards = [], logs = [], count = 4) {
   return shuffle([...fresh, ...repeat]).slice(0, count);
 }
 
+function withTimeout(promise, timeoutMs = REMOTE_BUDGET_MS) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error('remote timeout')), timeoutMs))
+  ]);
+}
+
 async function generateMealsRemote(profile = {}, count = 4) {
   const preferredFlavor = profile.preferredFlavor || '随机';
   const tabooTags = profile.tabooTags || [];
 
   const [meals, quotes] = await Promise.all([
-    remoteContent.fetchRandomMeals(Math.max(8, count * 3)),
+    remoteContent.fetchRandomMeals(Math.max(5, count * 2)),
     remoteContent.fetchQuotes(Math.max(3, count))
   ]);
 
@@ -349,14 +385,19 @@ async function generateMeals(profile = {}, count = 4, logs = []) {
   const activeMealMode = profile.activeMealMode || personalize.resolveMealMode(profile.mealMode || '智能');
   const expandedCount = Math.max(count + 3, 6);
 
-  try {
-    const remoteCards = await generateMealsRemote(profile, expandedCount);
-    if (remoteCards.length >= count) {
-      const modeCards = applyMealMode(remoteCards, activeMealMode);
-      return applySevenDayDedupe(modeCards, logs, count);
+  // 默认中文优先：走本地结构化数据。
+  const useRemote = profile.useRemote === true;
+
+  if (useRemote) {
+    try {
+      const remoteCards = await withTimeout(generateMealsRemote(profile, expandedCount), REMOTE_BUDGET_MS);
+      if (remoteCards.length >= count) {
+        const modeCards = applyMealMode(remoteCards, activeMealMode);
+        return applySevenDayDedupe(modeCards, logs, count);
+      }
+    } catch (err) {
+      // 网络不可用或超时 -> 回退本地池
     }
-  } catch (err) {
-    // network unavailable or blocked domains -> fallback to local pool
   }
 
   const localCards = generateMealsLocal(profile, expandedCount);

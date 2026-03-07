@@ -292,6 +292,10 @@
   text-overflow: ellipsis;
 }
 
+.empty-card {
+  margin-top: 6rpx;
+}
+
 .action-success {
   box-shadow: 0 0 0 2rpx rgba(198, 169, 105, 0.35) inset;
 }

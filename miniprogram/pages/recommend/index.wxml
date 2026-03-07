@@ -140,4 +140,13 @@
       >系统转发</button>
     </view>
   </view>
+
+  <view wx:else class="card empty-card">
+    <view class="title" style="font-size: 32rpx;">还没抽到合适的吃法</view>
+    <view class="subtitle">你可以再翻一页，或者切换口味后再试。</view>
+    <view class="row action-row" style="margin-top: 18rpx;">
+      <button class="btn-primary" style="flex:1;" bindtap="refreshCards">再翻一页</button>
+      <button class="btn-secondary" style="flex:1;" bindtap="switchFlavor">换个风味</button>
+    </view>
+  </view>
 </view>

@@ -310,8 +310,13 @@ Page({
     storage.appendLog(log);
     this.setData({
       selectedMealId: item.id || '',
-      selectedMealTitle: item.title || ''
+      selectedMealTitle: item.title || '',
+      currentCardIndex: this.data.currentCardIndex
     });
-    wx.navigateTo({ url: '/pages/result/index' });
+
+    wx.showToast({
+      title: '已选中，可去分享',
+      icon: 'success'
+    });
   }
 });

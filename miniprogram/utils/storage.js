@@ -11,6 +11,7 @@ const defaultProfile = {
   mealMode: '智能',
   shareCopyStyle: '克制版',
   posterTheme: '极简',
+  useRemote: false,
   tasteWeights: {
     清淡: 0,
     均衡: 1,
