@@ -26,7 +26,9 @@ Page({
     preferredFlavor: '随机',
     mealMode: '智能',
     activeMealMode: '午餐',
-    flavorDriftHint: '口味画像还在形成中，先多翻几页看看。'
+    flavorDriftHint: '口味画像还在形成中，先多翻几页看看。',
+    selectedMealId: '',
+    selectedMealTitle: ''
   },
 
   onLoad() {
@@ -39,13 +41,17 @@ Page({
     const logs = storage.getLogs();
     const activeMealMode = personalize.resolveMealMode(profile.mealMode || '智能');
     const drift = personalize.buildFlavorDrift(logs);
+    const selected = storage.getSelected();
 
     this.setData({
       preferredFlavor: profile.preferredFlavor || '随机',
       mealMode: profile.mealMode || '智能',
       activeMealMode,
-      flavorDriftHint: drift.text
+      flavorDriftHint: drift.text,
+      selectedMealId: (selected && selected.id) || '',
+      selectedMealTitle: (selected && selected.title) || ''
     });
+    this.ensureShareMenu();
     this.generateCards();
   },
 
@@ -77,6 +83,15 @@ Page({
     this.setData({ pressedAction: '' });
   },
 
+  ensureShareMenu() {
+    if (typeof wx === 'undefined' || typeof wx.showShareMenu !== 'function') return;
+    wx.showShareMenu({
+      withShareTicket: true,
+      menus: ['shareAppMessage', 'shareTimeline'],
+      fail: () => {}
+    });
+  },
+
   markActionSuccess(action) {
     if (this._successTimer) clearTimeout(this._successTimer);
     this.setData({ successAction: action || '' });
@@ -88,6 +103,34 @@ Page({
   getCurrentCard() {
     const idx = this.data.currentCardIndex || 0;
     return this.data.cards[idx] || null;
+  },
+
+  buildRecommendShareTitle() {
+    const selectedTitle = this.data.selectedMealTitle;
+    if (selectedTitle) {
+      return `我今天选了：${selectedTitle}｜吃啥么`;
+    }
+
+    const current = this.getCurrentCard();
+    if (current && current.title) {
+      return `今天吃这个：${current.title}`;
+    }
+
+    return '吃啥么｜今天吃什么';
+  },
+
+  onShareAppMessage() {
+    return {
+      title: this.buildRecommendShareTitle(),
+      path: '/pages/recommend/index'
+    };
+  },
+
+  onShareTimeline() {
+    return {
+      title: this.buildRecommendShareTitle(),
+      query: this.data.selectedMealId ? `selected=${encodeURIComponent(this.data.selectedMealId)}` : ''
+    };
   },
 
   triggerLightHaptic() {
@@ -233,6 +276,17 @@ Page({
     this.chooseWithItem(item, 'random');
   },
 
+  goShareResult() {
+    this.triggerLightHaptic();
+    this.setData({ pressedAction: '' });
+    const selected = storage.getSelected();
+    if (!selected) {
+      wx.showToast({ title: '先选一个“今天吃这个”', icon: 'none' });
+      return;
+    }
+    wx.navigateTo({ url: '/pages/result/index' });
+  },
+
   chooseWithItem(item, action) {
     const profile = storage.getProfile();
     const weights = { ...(profile.tasteWeights || {}) };
@@ -254,6 +308,10 @@ Page({
 
     storage.setSelected({ ...item, ts: Date.now() });
     storage.appendLog(log);
+    this.setData({
+      selectedMealId: item.id || '',
+      selectedMealTitle: item.title || ''
+    });
     wx.navigateTo({ url: '/pages/result/index' });
   }
 });

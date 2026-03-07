@@ -47,7 +47,10 @@
             <view class="poker-mask"></view>
 
             <view class="poker-content">
-              <text class="rank-badge">{{idx === 0 ? '今日首推' : idx === 1 ? '稳妥备选' : '灵感备选'}}</text>
+              <view class="rank-row">
+                <text class="rank-badge">{{idx === 0 ? '今日首推' : idx === 1 ? '稳妥备选' : '灵感备选'}}</text>
+                <text wx:if="{{selectedMealId === item.id}}" class="selected-badge">已选中</text>
+              </view>
               <view class="poker-title">{{item.title}}</view>
               <view class="poker-dish">{{item.dishLine}}</view>
 
@@ -118,6 +121,23 @@
         bindtouchcancel="onReleaseAction"
         bindtap="randomOne"
       >交给口福</button>
+    </view>
+
+    <view wx:if="{{selectedMealId}}" class="row action-row selected-share-row">
+      <button
+        class="btn-secondary"
+        style="flex:1;"
+        data-action="share"
+        bindtouchstart="onPressAction"
+        bindtouchend="onReleaseAction"
+        bindtouchcancel="onReleaseAction"
+        bindtap="goShareResult"
+      >已选：{{selectedMealTitle}} · 去分享</button>
+      <button
+        class="btn-secondary"
+        style="flex:1;"
+        open-type="share"
+      >系统转发</button>
     </view>
   </view>
 </view>

@@ -86,12 +86,7 @@ Page({
   },
 
   onLoad() {
-    if (typeof wx !== 'undefined' && typeof wx.showShareMenu === 'function') {
-      wx.showShareMenu({
-        withShareTicket: true,
-        menus: ['shareAppMessage', 'shareTimeline']
-      });
-    }
+    this.ensureShareMenu();
   },
 
   onShow() {
@@ -102,6 +97,17 @@ Page({
       posterTheme: profile.posterTheme || '极简',
       copyStyle: profile.shareCopyStyle || '克制版'
     });
+    this.ensureShareMenu();
+  },
+
+  ensureShareMenu() {
+    if (typeof wx !== 'undefined' && typeof wx.showShareMenu === 'function') {
+      wx.showShareMenu({
+        withShareTicket: true,
+        menus: ['shareAppMessage', 'shareTimeline'],
+        fail: () => {}
+      });
+    }
   },
 
   persistSharePreferences(next = {}) {
@@ -189,12 +195,7 @@ Page({
     const meal = this.data.meal;
     const shareText = composeShareText(meal, this.data.copyStyle);
 
-    if (typeof wx !== 'undefined' && typeof wx.showShareMenu === 'function') {
-      wx.showShareMenu({
-        withShareTicket: true,
-        menus: ['shareAppMessage', 'shareTimeline']
-      });
-    }
+    this.ensureShareMenu();
 
     wx.setClipboardData({
       data: shareText,
