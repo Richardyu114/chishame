@@ -88,6 +88,44 @@
   gap: 14rpx;
 }
 
+.share-sheet-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(12, 12, 12, 0.42);
+  z-index: 88;
+}
+
+.share-sheet {
+  position: fixed;
+  left: 18rpx;
+  right: 18rpx;
+  bottom: 18rpx;
+  border-radius: 28rpx;
+  background: #fcfbf8;
+  border: 1rpx solid #e6dfce;
+  box-shadow: 0 -8rpx 28rpx rgba(0, 0, 0, 0.16);
+  padding: 22rpx;
+  z-index: 89;
+}
+
+.share-sheet-title {
+  font-size: 30rpx;
+  color: #1f1f1f;
+  font-weight: 600;
+}
+
+.share-sheet-subtitle {
+  margin-top: 8rpx;
+  margin-bottom: 14rpx;
+  font-size: 23rpx;
+  color: #6b6b6b;
+}
+
+.share-sheet .btn-secondary,
+.share-sheet .btn-primary {
+  margin-top: 10rpx;
+}
+
 .poster-canvas {
   position: fixed;
   left: -3000rpx;

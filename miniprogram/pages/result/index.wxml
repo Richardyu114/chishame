@@ -45,12 +45,20 @@
   </view>
 
   <view class="action-stack">
-    <button class="btn-primary" bindtap="choosePosterThemeThenGenerate" loading="{{generatingPoster}}" disabled="{{generatingPoster}}">{{generatingPoster ? '海报生成中...' : '分享图片（海报）'}}</button>
-    <button class="btn-secondary" open-type="share">转发小程序卡片</button>
-    <button class="btn-secondary" bindtap="chooseCopyStyleThenShare">朋友圈文案分享</button>
-    <button class="btn-secondary" bindtap="copyShareText">复制分享文案</button>
+    <button class="btn-primary" bindtap="openSharePanel">一键分享菜单</button>
     <button class="btn-secondary" bindtap="pickAgain">再翻一页</button>
     <button class="btn-secondary" bindtap="toRecommend">回推荐页</button>
+  </view>
+
+  <view wx:if="{{sharePanelVisible}}" class="share-sheet-mask" bindtap="closeSharePanel"></view>
+  <view wx:if="{{sharePanelVisible}}" class="share-sheet">
+    <view class="share-sheet-title">选择分享方式</view>
+    <view class="share-sheet-subtitle">支持海报、小程序卡片、朋友圈文案</view>
+    <button class="btn-primary" bindtap="choosePosterThemeThenGenerate" loading="{{generatingPoster}}" disabled="{{generatingPoster}}">{{generatingPoster ? '海报生成中...' : '分享图片（海报）'}}</button>
+    <button class="btn-secondary" open-type="share" bindtap="onTapShareMiniProgram">转发小程序卡片</button>
+    <button class="btn-secondary" bindtap="chooseCopyStyleThenShare">朋友圈文案分享</button>
+    <button class="btn-secondary" bindtap="copyShareText">复制分享文案</button>
+    <button class="btn-secondary" bindtap="closeSharePanel">取消</button>
   </view>
 
   <canvas canvas-id="sharePosterCanvas" class="poster-canvas"></canvas>

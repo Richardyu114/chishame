@@ -82,7 +82,8 @@ Page({
     meal: null,
     generatingPoster: false,
     posterTheme: '极简',
-    copyStyle: '克制版'
+    copyStyle: '克制版',
+    sharePanelVisible: false
   },
 
   onLoad() {
@@ -95,7 +96,8 @@ Page({
     this.setData({
       meal,
       posterTheme: profile.posterTheme || '极简',
-      copyStyle: profile.shareCopyStyle || '克制版'
+      copyStyle: profile.shareCopyStyle || '克制版',
+      sharePanelVisible: false
     });
     this.ensureShareMenu();
   },
@@ -142,15 +144,36 @@ Page({
     };
   },
 
+  openSharePanel() {
+    if (!this.data.meal) {
+      wx.showToast({ title: '先选一个餐食结果', icon: 'none' });
+      return;
+    }
+    this.ensureShareMenu();
+    this.setData({ sharePanelVisible: true });
+  },
+
+  closeSharePanel() {
+    if (!this.data.sharePanelVisible) return;
+    this.setData({ sharePanelVisible: false });
+  },
+
+  onTapShareMiniProgram() {
+    this.closeSharePanel();
+  },
+
   pickAgain() {
+    this.closeSharePanel();
     wx.navigateBack();
   },
 
   toRecommend() {
+    this.closeSharePanel();
     wx.switchTab({ url: '/pages/recommend/index' });
   },
 
   copyShareText() {
+    this.closeSharePanel();
     const meal = this.data.meal;
     if (!meal) return;
     wx.setClipboardData({
@@ -178,6 +201,7 @@ Page({
   },
 
   choosePosterThemeThenGenerate() {
+    this.closeSharePanel();
     wx.showActionSheet({
       itemList: posterThemes,
       success: (res) => {
@@ -190,6 +214,7 @@ Page({
   },
 
   chooseCopyStyleThenShare() {
+    this.closeSharePanel();
     wx.showActionSheet({
       itemList: copyStyles,
       success: (res) => {
