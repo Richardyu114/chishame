@@ -74,48 +74,48 @@ function composeShareText(meal, style = '雅正', variant = 0) {
 function getThemeTokens(theme = '极简') {
   if (theme === '国风') {
     return {
-      bg: '#F6F1E8',
-      overlay: 'rgba(62, 39, 17, 0.34)',
-      panel: '#FFF8EB',
-      panelBorder: '#E0D1B2',
-      panelSoft: '#F7ECD8',
+      bg: '#F5EEE2',
+      overlay: 'rgba(58, 36, 14, 0.34)',
+      panel: '#FFF7E8',
+      panelBorder: '#DDCAA5',
+      panelSoft: '#F6E7CD',
       title: '#4A3424',
-      body: '#6F5A45',
+      body: '#6A5541',
       accent: '#B88945',
       heroText: '#FFF9EE',
-      ribbonBg: 'rgba(74, 52, 36, 0.42)',
-      quotePanel: 'rgba(255, 249, 238, 0.88)'
+      ribbonBg: 'rgba(74, 52, 36, 0.44)',
+      quotePanel: 'rgba(255, 248, 235, 0.9)'
     };
   }
 
   if (theme === '夜色') {
     return {
-      bg: '#111319',
-      overlay: 'rgba(0, 0, 0, 0.46)',
-      panel: '#1A1E28',
-      panelBorder: '#2B3242',
-      panelSoft: '#202737',
+      bg: '#10131B',
+      overlay: 'rgba(6, 10, 18, 0.54)',
+      panel: '#1A1F2C',
+      panelBorder: '#2C3650',
+      panelSoft: '#222C40',
       title: '#F1F4FA',
-      body: '#AAB2C5',
-      accent: '#8DA9FF',
+      body: '#B0BAD0',
+      accent: '#88A8FF',
       heroText: '#F4F7FF',
-      ribbonBg: 'rgba(20, 26, 38, 0.52)',
-      quotePanel: 'rgba(26, 31, 44, 0.84)'
+      ribbonBg: 'rgba(18, 24, 36, 0.56)',
+      quotePanel: 'rgba(24, 30, 44, 0.88)'
     };
   }
 
   return {
-    bg: '#F7F6F2',
-    overlay: 'rgba(15, 16, 15, 0.30)',
-    panel: '#FCFBF8',
-    panelBorder: '#E6DFCE',
-    panelSoft: '#F4EFE4',
+    bg: '#F7F4EE',
+    overlay: 'rgba(10, 12, 11, 0.32)',
+    panel: '#FCF9F2',
+    panelBorder: '#E2D8C4',
+    panelSoft: '#F3EBDD',
     title: '#1F1F1F',
-    body: '#6B6B6B',
-    accent: '#C6A969',
+    body: '#666055',
+    accent: '#C29A55',
     heroText: '#FFFFFF',
-    ribbonBg: 'rgba(38, 40, 38, 0.34)',
-    quotePanel: 'rgba(252, 251, 248, 0.88)'
+    ribbonBg: 'rgba(34, 38, 33, 0.36)',
+    quotePanel: 'rgba(252, 250, 244, 0.9)'
   };
 }
 

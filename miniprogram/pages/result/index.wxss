@@ -20,7 +20,7 @@
 .mask {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(18, 20, 18, 0.14), rgba(20, 22, 20, 0.72));
+  background: linear-gradient(180deg, rgba(18, 20, 18, 0.08), rgba(20, 22, 20, 0.72));
 }
 
 .hero-content {
@@ -34,9 +34,9 @@
 .hero-badge {
   display: inline-block;
   border-radius: 999rpx;
-  padding: 5rpx 13rpx;
-  background: rgba(198, 169, 105, 0.26);
-  border: 1rpx solid rgba(224, 198, 142, 0.6);
+  padding: 6rpx 14rpx;
+  background: rgba(198, 169, 105, 0.28);
+  border: 1rpx solid rgba(224, 198, 142, 0.64);
   font-size: 20rpx;
 }
 
@@ -119,6 +119,7 @@
   font-size: 30rpx;
   color: #1f1f1f;
   font-weight: 600;
+  letter-spacing: 0.4rpx;
 }
 
 .share-sheet .btn-secondary,
@@ -159,7 +160,7 @@
   margin-top: 10rpx;
   color: #2d2b27;
   font-size: 24rpx;
-  line-height: 1.64;
+  line-height: 1.66;
   white-space: pre-line;
 }
 
