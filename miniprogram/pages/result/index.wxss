@@ -121,6 +121,46 @@
   margin-top: 10rpx;
 }
 
+.copy-panel {
+  margin-top: 14rpx;
+  padding: 14rpx;
+  border-radius: 18rpx;
+  background: #f6f2e9;
+  border: 1rpx solid #e4dbc9;
+}
+
+.copy-panel-head {
+  align-items: center;
+  gap: 10rpx;
+}
+
+.copy-panel-title {
+  flex: 1;
+  color: #4b4538;
+  font-size: 23rpx;
+}
+
+.copy-style-btn {
+  margin-top: 0 !important;
+  min-width: 132rpx;
+  padding: 8rpx 12rpx;
+  font-size: 21rpx;
+  line-height: 1.1;
+}
+
+.copy-panel-text {
+  margin-top: 10rpx;
+  color: #2d2b27;
+  font-size: 24rpx;
+  line-height: 1.62;
+  white-space: pre-line;
+}
+
+.copy-panel-actions {
+  margin-top: 12rpx;
+  gap: 12rpx;
+}
+
 .poster-canvas {
   position: fixed;
   left: -3000rpx;

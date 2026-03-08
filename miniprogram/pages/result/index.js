@@ -2,6 +2,7 @@ const storage = require('../../utils/storage');
 
 const POSTER_WIDTH = 750;
 const POSTER_HEIGHT = 1334;
+const POSTER_SCALE = 2;
 const posterThemes = ['极简', '国风', '夜色'];
 const copyStyles = ['雅正', '诙谐', '清言'];
 const todaySigns = [
@@ -23,19 +24,37 @@ function getDateSeed(date = new Date()) {
   return Number(formatDate(date).replace(/\./g, ''));
 }
 
-function composeShareText(meal, style = '雅正') {
+function pickByVariant(lines = [], variant = 0) {
+  if (!Array.isArray(lines) || !lines.length) return '';
+  const index = Math.abs(Number(variant || 0)) % lines.length;
+  return lines[index];
+}
+
+function composeShareText(meal, style = '雅正', variant = 0) {
   if (!meal) return '吃啥么｜今日饮馔';
   const quote = (meal.quote && meal.quote.text) || '民以食为天。';
 
   if (style === '诙谐') {
-    return `今日议食到此：${meal.title}。\n佐以${meal.veggie}，并添${meal.extra}。\n吾意已决，不再踌躇。`;
+    return pickByVariant([
+      `今日议食既定：${meal.title}。\n佐以${meal.veggie}，并添${meal.extra}。\n此席可安，毋复犹疑。`,
+      `本日餐案：${meal.title}。\n配${meal.veggie}，加${meal.extra}。\n今日诸事，可先从容进膳。`,
+      `此刻定席：${meal.title}。\n佐菜${meal.veggie}，补充${meal.extra}。\n心意已决，且安心开餐。`
+    ], variant);
   }
 
   if (style === '清言') {
-    return `今日餐案：${meal.title}，辅以${meal.veggie}。\n${quote}\n—— 吃啥么`; 
+    return pickByVariant([
+      `今日餐案：${meal.title}，辅以${meal.veggie}。\n${quote}\n—— 吃啥么`,
+      `今席所择：${meal.title}，并佐${meal.veggie}。\n${quote}\n—— 吃啥么`,
+      `今日膳目：${meal.title}，配${meal.veggie}与${meal.extra}。\n${quote}\n—— 吃啥么`
+    ], variant);
   }
 
-  return `今日本席：${meal.title}（${meal.protein} + ${meal.staple}），辅以${meal.veggie}。`;
+  return pickByVariant([
+    `今日本席：${meal.title}（${meal.protein} + ${meal.staple}），辅以${meal.veggie}。`,
+    `今日定席：${meal.title}，主配为${meal.protein}与${meal.staple}，并佐${meal.veggie}。`,
+    `今席已定：${meal.title}，结构为${meal.protein}、${meal.staple}，另配${meal.veggie}。`
+  ], variant);
 }
 
 function getThemeTokens(theme = '极简') {
@@ -83,6 +102,8 @@ Page({
     generatingPoster: false,
     posterTheme: '极简',
     copyStyle: '雅正',
+    copyVariantIndex: 0,
+    shareCopyPreview: '',
     sharePanelVisible: false
   },
 
@@ -93,10 +114,13 @@ Page({
   onShow() {
     const meal = storage.getSelected();
     const profile = storage.getProfile();
+    const copyStyle = profile.shareCopyStyle || '雅正';
     this.setData({
       meal,
       posterTheme: profile.posterTheme || '极简',
-      copyStyle: profile.shareCopyStyle || '雅正',
+      copyStyle,
+      copyVariantIndex: 0,
+      shareCopyPreview: composeShareText(meal, copyStyle, 0),
       sharePanelVisible: false
     });
     this.ensureShareMenu();
@@ -129,7 +153,7 @@ Page({
     const meal = this.data.meal;
     const query = this.buildShareQuery(meal);
     return {
-      title: composeShareText(meal, this.data.copyStyle),
+      title: composeShareText(meal, this.data.copyStyle, this.data.copyVariantIndex),
       path: query.length ? `/pages/recommend/index?${query.join('&')}` : '/pages/recommend/index'
     };
   },
@@ -139,9 +163,19 @@ Page({
     const query = this.buildShareQuery(meal);
     query.push(`from=timeline`, `style=${encodeURIComponent(this.data.copyStyle)}`);
     return {
-      title: composeShareText(meal, this.data.copyStyle),
+      title: composeShareText(meal, this.data.copyStyle, this.data.copyVariantIndex),
       query: query.join('&')
     };
+  },
+
+  refreshShareCopyPreview(extra = {}) {
+    const meal = extra.meal || this.data.meal;
+    const style = extra.style || this.data.copyStyle;
+    const variant = extra.variant !== undefined ? extra.variant : this.data.copyVariantIndex;
+
+    this.setData({
+      shareCopyPreview: composeShareText(meal, style, variant)
+    });
   },
 
   openSharePanel() {
@@ -150,6 +184,7 @@ Page({
       return;
     }
     this.ensureShareMenu();
+    this.refreshShareCopyPreview();
     this.setData({ sharePanelVisible: true });
   },
 
@@ -160,6 +195,29 @@ Page({
 
   onTapShareMiniProgram() {
     this.closeSharePanel();
+  },
+
+  chooseCopyStyle() {
+    wx.showActionSheet({
+      itemList: copyStyles,
+      success: (res) => {
+        const nextStyle = copyStyles[res.tapIndex] || '雅正';
+        this.setData({
+          copyStyle: nextStyle,
+          copyVariantIndex: 0
+        }, () => {
+          this.persistSharePreferences({ shareCopyStyle: nextStyle });
+          this.refreshShareCopyPreview({ style: nextStyle, variant: 0 });
+        });
+      }
+    });
+  },
+
+  rotateShareCopy() {
+    const nextVariant = (Number(this.data.copyVariantIndex || 0) + 1) % 3;
+    this.setData({ copyVariantIndex: nextVariant }, () => {
+      this.refreshShareCopyPreview({ variant: nextVariant });
+    });
   },
 
   pickAgain() {
@@ -173,13 +231,12 @@ Page({
   },
 
   copyShareText() {
-    this.closeSharePanel();
     const meal = this.data.meal;
     if (!meal) return;
     wx.setClipboardData({
-      data: composeShareText(meal, this.data.copyStyle),
+      data: this.data.shareCopyPreview || composeShareText(meal, this.data.copyStyle, this.data.copyVariantIndex),
       success: () => {
-        wx.showToast({ title: '文案已抄录', icon: 'success' });
+        wx.showToast({ title: '文案已复制', icon: 'success' });
       }
     });
   },
@@ -219,16 +276,21 @@ Page({
       itemList: copyStyles,
       success: (res) => {
         const nextStyle = copyStyles[res.tapIndex] || '雅正';
-        this.setData({ copyStyle: nextStyle });
-        this.persistSharePreferences({ shareCopyStyle: nextStyle });
-        this.shareToMomentsDirectly();
+        this.setData({
+          copyStyle: nextStyle,
+          copyVariantIndex: 0
+        }, () => {
+          this.persistSharePreferences({ shareCopyStyle: nextStyle });
+          this.refreshShareCopyPreview({ style: nextStyle, variant: 0 });
+          this.shareToMomentsDirectly();
+        });
       }
     });
   },
 
   shareToMomentsDirectly() {
     const meal = this.data.meal;
-    const shareText = composeShareText(meal, this.data.copyStyle);
+    const shareText = composeShareText(meal, this.data.copyStyle, this.data.copyVariantIndex);
 
     this.ensureShareMenu();
 
@@ -304,64 +366,69 @@ Page({
       const ctx = wx.createCanvasContext('sharePosterCanvas', this);
       const dateText = formatDate(new Date());
       const signText = this.buildTodaySign(meal);
+      const coverHeight = 760;
 
-      // Background
       ctx.setFillStyle(tokens.bg);
       ctx.fillRect(0, 0, POSTER_WIDTH, POSTER_HEIGHT);
 
-      // Cover area
-      ctx.drawImage(imagePath, 0, 0, POSTER_WIDTH, 780);
+      ctx.drawImage(imagePath, 0, 0, POSTER_WIDTH, coverHeight);
+      ctx.setFillStyle('rgba(16, 16, 16, 0.18)');
+      ctx.fillRect(0, 0, POSTER_WIDTH, 120);
       ctx.setFillStyle(tokens.overlay);
-      ctx.fillRect(0, 500, POSTER_WIDTH, 280);
+      ctx.fillRect(0, 440, POSTER_WIDTH, 320);
 
-      // Brand + title
       ctx.setFillStyle(tokens.heroText);
       ctx.setFontSize(30);
-      ctx.fillText(`吃啥么 · ${theme}模板`, 40, 590);
+      ctx.fillText('吃啥么', 40, 76);
+      ctx.setFontSize(21);
+      ctx.fillText(`${dateText} · ${theme}`, 40, 108);
+
+      const title = meal.title || '今日餐案';
+      ctx.setFontSize(52);
+      this.drawWrappedText(ctx, title, 40, 620, 670, 62, 2);
 
       ctx.setFontSize(24);
-      ctx.fillText(dateText, 40, 632);
+      ctx.setFillStyle('rgba(255, 255, 255, 0.92)');
+      this.drawWrappedText(ctx, meal.dishLine || '', 40, 720, 670, 34, 1);
 
-      ctx.setFontSize(46);
-      const title = meal.title || '今日餐案';
-      this.drawWrappedText(ctx, title, 40, 690, 670, 56, 2);
-
-      // Info card
       ctx.setFillStyle(tokens.panel);
-      ctx.fillRect(30, 820, 690, 390);
+      ctx.fillRect(26, 788, 698, 430);
       ctx.setStrokeStyle(tokens.panelBorder);
-      ctx.strokeRect(30, 820, 690, 390);
+      ctx.setLineWidth(2);
+      ctx.strokeRect(26, 788, 698, 430);
+
+      ctx.setFillStyle(tokens.accent);
+      ctx.fillRect(52, 828, 6, 106);
 
       ctx.setFillStyle(tokens.title);
-      ctx.setFontSize(30);
-      ctx.fillText('膳食结构', 60, 878);
+      ctx.setFontSize(32);
+      ctx.fillText('本席结构', 72, 854);
 
       ctx.setFillStyle(tokens.body);
-      ctx.setFontSize(26);
+      ctx.setFontSize(27);
       const lines = [
         `主食：${meal.staple || '-'}`,
         `蛋白：${meal.protein || '-'}`,
         `蔬菜：${meal.veggie || '-'}`,
         `补充：${meal.extra || '-'}`,
-        `估算热量：${meal.calories || '-'} kcal`
+        `热量：${meal.calories || '-'} kcal`
       ];
 
       lines.forEach((line, idx) => {
-        ctx.fillText(line, 60, 930 + idx * 50);
+        ctx.fillText(line, 72, 914 + idx * 54);
       });
 
       ctx.setFillStyle(tokens.accent);
-      ctx.setFontSize(24);
-      this.drawWrappedText(ctx, signText, 60, 1188, 630, 36, 2);
+      ctx.setFontSize(23);
+      this.drawWrappedText(ctx, signText, 72, 1188, 620, 34, 1);
 
-      // Quote
       ctx.setFillStyle(tokens.title);
-      ctx.setFontSize(25);
-      this.drawWrappedText(ctx, `“${(meal.quote && meal.quote.text) || '民以食为天。'}”`, 40, 1268, 670, 38, 2);
+      ctx.setFontSize(24);
+      this.drawWrappedText(ctx, `“${(meal.quote && meal.quote.text) || '民以食为天。'}”`, 40, 1262, 668, 34, 2);
 
       ctx.setFillStyle(tokens.accent);
-      ctx.setFontSize(22);
-      ctx.fillText((meal.quote && meal.quote.from) || '《汉书》', 40, 1320);
+      ctx.setFontSize(21);
+      ctx.fillText((meal.quote && meal.quote.from) || '《汉书》', 40, 1314);
 
       ctx.draw(false, () => {
         wx.canvasToTempFilePath(
@@ -371,10 +438,10 @@ Page({
             y: 0,
             width: POSTER_WIDTH,
             height: POSTER_HEIGHT,
-            destWidth: POSTER_WIDTH,
-            destHeight: POSTER_HEIGHT,
-            fileType: 'jpg',
-            quality: 0.92,
+            destWidth: POSTER_WIDTH * POSTER_SCALE,
+            destHeight: POSTER_HEIGHT * POSTER_SCALE,
+            fileType: 'png',
+            quality: 1,
             success: (res) => resolve(res.tempFilePath),
             fail: (err) => reject(err)
           },
@@ -419,7 +486,7 @@ Page({
         success: () => {
           wx.showModal({
             title: '海报已存入相册',
-            content: `已存为「${this.data.posterTheme}」风格海报，可前往朋友圈发布。`,
+            content: `已生成高清海报（${this.data.posterTheme}），可前往朋友圈发布。`,
             confirmText: '前往发布',
             cancelText: '稍后',
             success: () => resolve()

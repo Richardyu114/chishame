@@ -1,5 +1,6 @@
 <view class="container recommend-page">
   <view class="card top-bar">
+    <view class="app-name">吃啥么</view>
     <view class="title top-title">今日饮馔</view>
 
     <view class="row meta-row">

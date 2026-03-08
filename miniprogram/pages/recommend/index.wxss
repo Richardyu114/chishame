@@ -10,7 +10,15 @@
   border-color: #e6dfce;
 }
 
+.app-name {
+  font-size: 22rpx;
+  color: #7d7566;
+  letter-spacing: 2rpx;
+  text-transform: uppercase;
+}
+
 .top-title {
+  margin-top: 6rpx;
   font-size: 42rpx;
   font-family: "Source Han Serif SC", "Noto Serif CJK SC", "STSong", "Songti SC", serif;
 }
