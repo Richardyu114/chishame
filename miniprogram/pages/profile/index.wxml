@@ -1,7 +1,6 @@
 <view class="container profile-page" wx:if="{{profile}}">
   <view class="card">
     <view class="title section-title">荐食设定</view>
-    <view class="subtitle section-hint">风味偏好与忌口将直接影响荐食结果</view>
     <view class="subtitle drift-hint">{{flavorDriftHint}}</view>
 
     <view class="subtitle" style="margin-top: 14rpx;">风味偏好</view>
@@ -14,7 +13,7 @@
       <view class="btn-secondary flavor-pill">{{profile.mealMode || '智能'}}</view>
     </picker>
 
-    <view class="subtitle" style="margin-top: 18rpx;">忌口与少食</view>
+    <view class="subtitle" style="margin-top: 18rpx;">忌口</view>
     <view class="taboo-wrap">
       <block wx:for="{{tabooOptions}}" wx:key="*this">
         <text class="tag {{profile.tabooTags.includes(item) ? 'active' : ''}}" data-tag="{{item}}" bindtap="toggleTaboo">{{item}}</text>

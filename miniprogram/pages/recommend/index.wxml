@@ -1,13 +1,10 @@
 <view class="container recommend-page">
   <view class="card top-bar">
     <view class="title top-title">今日饮馔</view>
-    <view class="subtitle">{{timeSlot}} · 先定餐案，再择去处</view>
 
     <view class="row meta-row">
-      <view class="source-line">{{activeMealMode}}时段 · 格致荐食</view>
+      <view class="source-line">{{timeSlot}} · {{activeMealMode}}荐食</view>
     </view>
-
-    <view class="subtitle drift-hint">{{flavorDriftHint}}</view>
 
     <view class="row control-row">
       <view class="btn-secondary flavor-chip {{successAction === 'flavor' ? 'action-success' : ''}}" bindtap="switchFlavor">风味：{{preferredFlavor}}</view>
@@ -48,7 +45,7 @@
 
             <view class="poker-content">
               <view class="rank-row">
-                <text class="rank-badge">{{idx === 0 ? '本席首荐' : idx === 1 ? '次席可选' : '备席参考'}}</text>
+                <text class="rank-badge">{{idx === 0 ? '首荐' : idx === 1 ? '次荐' : '备选'}}</text>
                 <text wx:if="{{selectedMealId === item.id}}" class="selected-badge">已定席</text>
               </view>
               <view class="poker-title">{{item.title}}</view>
@@ -60,8 +57,8 @@
                 </block>
               </view>
 
-              <view class="poker-meta">估算 {{item.calories}} kcal · {{item.mealMode || activeMealMode}}策略</view>
-              <view class="poker-reason">{{item.reasons.join(' · ')}}</view>
+              <view class="poker-meta">≈ {{item.calories}} kcal · {{item.mealMode || activeMealMode}}</view>
+              <view class="poker-reason">{{item.reasons[0]}}</view>
 
               <view class="quote-box">
                 <view class="quote-text">“{{item.quote.text}}”</view>
@@ -124,7 +121,7 @@
     </view>
 
     <view wx:if="{{selectedMealId}}" class="selected-share-wrap">
-      <view class="selected-share-hint">本次定席：{{selectedMealTitle}}</view>
+      <view class="selected-share-hint">已定：{{selectedMealTitle}}</view>
       <view class="row action-row selected-share-row">
         <button
           class="btn-secondary"
@@ -146,7 +143,7 @@
 
   <view wx:else class="card empty-card">
     <view class="title" style="font-size: 32rpx;">暂未得其宜席</view>
-    <view class="subtitle">可再阅一席，或更易风味后重试。</view>
+    <view class="subtitle">请再试一席，或更易风味。</view>
     <view class="row action-row" style="margin-top: 18rpx;">
       <button class="btn-primary" style="flex:1;" bindtap="refreshCards">再阅一席</button>
       <button class="btn-secondary" style="flex:1;" bindtap="switchFlavor">更易一味</button>

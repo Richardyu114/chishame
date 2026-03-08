@@ -22,9 +22,3 @@
   margin-top: 6rpx;
 }
 
-.tiny-note {
-  margin-top: 14rpx;
-  font-size: 22rpx;
-  text-align: center;
-  color: #7b776d;
-}

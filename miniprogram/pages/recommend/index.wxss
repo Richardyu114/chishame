@@ -16,7 +16,7 @@
 }
 
 .meta-row {
-  margin-top: 16rpx;
+  margin-top: 8rpx;
 }
 
 .control-row {
@@ -43,10 +43,10 @@
 
 .source-line {
   display: inline-block;
-  font-size: 22rpx;
+  font-size: 21rpx;
   color: #6b6b6b;
-  background: rgba(198, 169, 105, 0.15);
-  padding: 8rpx 14rpx;
+  background: rgba(198, 169, 105, 0.14);
+  padding: 7rpx 13rpx;
   border-radius: 999rpx;
 }
 
@@ -291,6 +291,9 @@
   margin: 0 4rpx 8rpx;
   color: #6b6b6b;
   font-size: 23rpx;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .selected-share-row {

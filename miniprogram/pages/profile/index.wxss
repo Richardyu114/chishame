@@ -11,10 +11,6 @@ button[size="mini"] {
   font-size: 34rpx;
 }
 
-.section-hint {
-  margin-top: 8rpx;
-}
-
 .drift-hint {
   margin-top: 8rpx;
   color: #7a7467;

@@ -36,7 +36,7 @@ Page({
     preferredFlavor: '随机',
     mealMode: '智能',
     activeMealMode: '午餐',
-    flavorDriftHint: '风味画像尚在铺陈，可再阅数席以完善偏好。',
+    flavorDriftHint: '风味画像生成中。',
     selectedMealId: '',
     selectedMealTitle: ''
   },

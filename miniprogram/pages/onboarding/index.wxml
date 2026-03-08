@@ -1,12 +1,11 @@
 <view class="container onboarding-page">
   <view class="card brand-card">
     <view class="title brand-title">吃啥么</view>
-    <view class="subtitle">先定今日餐案，再择门店去处</view>
+    <view class="subtitle">定今日餐案</view>
   </view>
 
   <view class="card">
     <view class="title" style="font-size: 32rpx;">风味偏好</view>
-    <view class="subtitle">先设常用风格，后续可随时修订</view>
     <picker mode="selector" range="{{flavors}}" value="{{flavorIndex}}" bindchange="onFlavorChange">
       <view class="btn-secondary picker-pill">{{flavors[flavorIndex]}}</view>
     </picker>
@@ -22,5 +21,4 @@
   </view>
 
   <button class="btn-primary start-btn" bindtap="saveAndStart">启用荐食</button>
-  <view class="tiny-note">择简而食，安然度日</view>
 </view>

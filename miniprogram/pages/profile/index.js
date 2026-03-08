@@ -25,7 +25,7 @@ Page({
     mealModeOptions,
     flavorIndex: 0,
     mealModeIndex: 0,
-    flavorDriftHint: '风味画像尚在铺陈，可再阅数席以完善偏好。'
+    flavorDriftHint: '风味画像生成中。'
   },
 
   hydrateView() {
