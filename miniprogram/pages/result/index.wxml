@@ -1,6 +1,7 @@
 <view class="container result-page" wx:if="{{meal}}">
   <view class="card result-hero">
-    <image class="cover" src="{{meal.image}}" mode="aspectFill"></image>
+    <view class="cover-art" style="{{meal.visualTheme ? meal.visualTheme.heroStyle : 'background: linear-gradient(160deg, #3d5259, #6a7f86);'}}"></view>
+    <view class="cover-grain"></view>
     <view class="mask"></view>
     <view class="hero-content">
       <view class="hero-badge">今日餐案</view>

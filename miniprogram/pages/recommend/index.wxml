@@ -41,7 +41,8 @@
       <block wx:for="{{cards}}" wx:key="id" wx:for-index="idx">
         <swiper-item>
           <view class="poker-card {{idx === currentCardIndex ? 'card-active' : 'card-side'}}" style="animation-delay: {{idx * 24}}ms;">
-            <image class="poker-bg" src="{{item.image}}" mode="aspectFill"></image>
+            <view class="poker-bg-art" style="{{item.visualTheme ? item.visualTheme.cardStyle : 'background: linear-gradient(156deg, #3e4f54 0%, #66777d 45%, #9aa9a8 100%);'}}"></view>
+            <view class="poker-bg-grain"></view>
             <view class="poker-mask"></view>
 
             <view class="poker-content">

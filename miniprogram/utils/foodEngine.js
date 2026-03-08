@@ -1,6 +1,7 @@
 const data = require('./foodData');
 const remoteContent = require('./remoteContent');
 const personalize = require('./personalize');
+const visualTheme = require('./visualTheme');
 
 const flavorKeywords = {
   清淡: ['light', 'steam', 'steamed', 'salad', 'soup', 'boiled', '清淡', '蒸', '汤'],
@@ -228,6 +229,8 @@ function buildCard(id, staple, protein, veggie, extra, quote, preferredFlavor, o
     seedText: options.seedText || signature
   });
 
+  const theme = visualTheme.resolveVisualTheme(tags, signature);
+
   return {
     id: `meal_${id}`,
     title,
@@ -241,6 +244,7 @@ function buildCard(id, staple, protein, veggie, extra, quote, preferredFlavor, o
     reasons: explain(staple, protein, veggie, preferredFlavor),
     quote,
     image,
+    visualTheme: theme,
     shareText: `今日本席：${title}，辅以${veggie.name}。${quote.text}`
   };
 }
@@ -509,6 +513,8 @@ function buildRemoteCard(meal, quote, preferredFlavor, index, options = {}) {
 
   const safeQuote = quote || pickOne(data.quotes);
   const title = meal.strMeal || `${protein} + ${staple}`;
+  const finalTags = tags.slice(0, 3);
+  const theme = visualTheme.resolveVisualTheme(finalTags, `${meal.idMeal || index + 1}|${title}`);
 
   return {
     id: `meal_remote_${meal.idMeal || index + 1}`,
@@ -519,11 +525,12 @@ function buildRemoteCard(meal, quote, preferredFlavor, index, options = {}) {
     protein,
     veggie,
     extra,
-    tags: tags.slice(0, 3),
+    tags: finalTags,
     calories: estimateRemoteCalories(tags, ingredients),
     reasons: buildRemoteReasons(tags, preferredFlavor),
     quote: safeQuote,
     image,
+    visualTheme: theme,
     shareText: `今日本席：${title}（${protein} + ${staple}），辅以${veggie}。${safeQuote.text}`
   };
 }

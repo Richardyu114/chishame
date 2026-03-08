@@ -1,4 +1,5 @@
 const storage = require('../../utils/storage');
+const visualTheme = require('../../utils/visualTheme');
 
 const POSTER_WIDTH = 750;
 const POSTER_HEIGHT = 1334;
@@ -14,18 +15,6 @@ const todaySigns = [
   '宜：少犹疑，先定其席。',
   '宜：从容进膳，安顿身心。'
 ];
-
-const posterFallbackByTag = {
-  清淡: '/assets/food/salad.jpg',
-  均衡: '/assets/food/dish.jpg',
-  下饭: '/assets/food/hotpot.jpg',
-  浓香: '/assets/food/hotpot.jpg',
-  辛辣: '/assets/food/spicy.jpg',
-  面食: '/assets/food/noodle.jpg',
-  轻食: '/assets/food/salad.jpg',
-  鲜香: '/assets/food/sushi.jpg',
-  日常: '/assets/food/dish.jpg'
-};
 
 function formatDate(date = new Date()) {
   const y = date.getFullYear();
@@ -134,13 +123,14 @@ function drawRoundedRect(ctx, x, y, width, height, radius = 16) {
   ctx.closePath();
 }
 
-function pickPosterFallback(meal = {}) {
-  const tags = Array.isArray(meal.tags) ? meal.tags : [];
-  for (let i = 0; i < tags.length; i += 1) {
-    const found = posterFallbackByTag[tags[i]];
-    if (found) return found;
-  }
-  return '/assets/food/dish.jpg';
+function resolvePosterCoverColors(meal, themeTokens) {
+  const poster = (meal && meal.visualTheme && meal.visualTheme.poster) || {};
+  return {
+    top: poster.coverTop || themeTokens.coverTop || '#3f4f52',
+    mid: poster.coverMid || themeTokens.coverMid || '#5e7175',
+    bottom: poster.coverBottom || themeTokens.coverBottom || '#95a9a7',
+    glow: poster.glow || themeTokens.glow || 'rgba(233,238,231,0.32)'
+  };
 }
 
 Page({
@@ -160,14 +150,20 @@ Page({
 
   onShow() {
     const meal = storage.getSelected();
+    const normalizedMeal = meal
+      ? {
+          ...meal,
+          visualTheme: meal.visualTheme || visualTheme.resolveVisualTheme(meal.tags || [], meal.title || '')
+        }
+      : null;
     const profile = storage.getProfile();
     const copyStyle = profile.shareCopyStyle || '雅正';
     this.setData({
-      meal,
+      meal: normalizedMeal,
       posterTheme: profile.posterTheme || '极简',
       copyStyle,
       copyVariantIndex: 0,
-      shareCopyPreview: composeShareText(meal, copyStyle, 0),
+      shareCopyPreview: composeShareText(normalizedMeal, copyStyle, 0),
       sharePanelVisible: false
     });
     this.ensureShareMenu();
@@ -370,8 +366,8 @@ Page({
     this.setData({ generatingPoster: true });
     wx.showLoading({ title: '海报绘制中', mask: true });
 
-    this.getImageAsset(meal.image, meal)
-      .then((imageAsset) => this.drawPoster(meal, imageAsset, this.data.posterTheme))
+    Promise.resolve()
+      .then(() => this.drawPoster(meal, this.data.posterTheme))
       .then((tempPath) => this.savePosterToAlbum(tempPath))
       .catch((err) => {
         const message = err && err.message ? err.message : String(err || 'unknown error');
@@ -383,78 +379,7 @@ Page({
       });
   },
 
-  getImageAsset(src, meal = {}) {
-    return new Promise((resolve) => {
-      const fallback = pickPosterFallback(meal);
-      const target = src || fallback;
 
-      wx.getImageInfo({
-        src: target,
-        success: (res) => {
-          const width = Number(res.width || 0);
-          const height = Number(res.height || 0);
-          const lowResRemote = /^https?:\/\//.test(target) && (width < 900 || height < 900);
-
-          if (!lowResRemote) {
-            resolve({
-              path: res.path || target,
-              width,
-              height
-            });
-            return;
-          }
-
-          wx.getImageInfo({
-            src: fallback,
-            success: (fallbackRes) => resolve({
-              path: fallbackRes.path || fallback,
-              width: Number(fallbackRes.width || 0),
-              height: Number(fallbackRes.height || 0)
-            }),
-            fail: () => resolve({
-              path: res.path || target,
-              width,
-              height
-            })
-          });
-        },
-        fail: () => resolve({
-          path: fallback,
-          width: 0,
-          height: 0
-        })
-      });
-    });
-  },
-
-  drawCoverImage(ctx, imageAsset, x, y, width, height) {
-    const path = (imageAsset && imageAsset.path) || '/assets/food/dish.jpg';
-    const imageWidth = Number((imageAsset && imageAsset.width) || 0);
-    const imageHeight = Number((imageAsset && imageAsset.height) || 0);
-
-    if (!imageWidth || !imageHeight) {
-      ctx.drawImage(path, x, y, width, height);
-      return;
-    }
-
-    const boxRatio = width / height;
-    const imageRatio = imageWidth / imageHeight;
-
-    let sx = 0;
-    let sy = 0;
-    let sw = imageWidth;
-    let sh = imageHeight;
-
-    if (imageRatio > boxRatio) {
-      sw = imageHeight * boxRatio;
-      sx = (imageWidth - sw) / 2;
-    } else if (imageRatio < boxRatio) {
-      sh = imageWidth / boxRatio;
-      sy = (imageHeight - sh) / 2;
-    }
-
-    ctx.drawImage(path, sx, sy, sw, sh, x, y, width, height);
-  },
 
   buildTodaySign(meal) {
     if (meal && meal.quote && meal.quote.text) {
@@ -465,9 +390,10 @@ Page({
     return `今日签：${todaySigns[index]}`;
   },
 
-  drawPoster(meal, imageAsset, theme = '极简') {
+  drawPoster(meal, theme = '极简') {
     return new Promise((resolve, reject) => {
       const tokens = getThemeTokens(theme);
+      const coverColors = resolvePosterCoverColors(meal, tokens);
       const ctx = wx.createCanvasContext('sharePosterCanvas', this);
       const dateText = formatDate(new Date());
       const signText = this.buildTodaySign(meal);
@@ -482,11 +408,24 @@ Page({
       ctx.setFillStyle(tokens.bg);
       ctx.fillRect(0, 0, POSTER_WIDTH, POSTER_HEIGHT);
 
-      // 封面区：圆角裁切 + 底部渐暗，避免拉伸与边缘生硬。
+      // 封面区：高级渐变 + 软光斑，避免食物图错配与拉伸。
       ctx.save();
       drawRoundedRect(ctx, coverX, coverY, coverWidth, coverHeight, 30);
       ctx.clip();
-      this.drawCoverImage(ctx, imageAsset, coverX, coverY, coverWidth, coverHeight);
+
+      const coverGradient = ctx.createLinearGradient(coverX, coverY, coverX + coverWidth, coverY + coverHeight);
+      coverGradient.addColorStop(0, coverColors.top);
+      coverGradient.addColorStop(0.52, coverColors.mid);
+      coverGradient.addColorStop(1, coverColors.bottom);
+      ctx.setFillStyle(coverGradient);
+      ctx.fillRect(coverX, coverY, coverWidth, coverHeight);
+
+      const glowGradient = ctx.createRadialGradient(coverX + 120, coverY + 110, 10, coverX + 120, coverY + 110, 320);
+      glowGradient.addColorStop(0, coverColors.glow);
+      glowGradient.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.setFillStyle(glowGradient);
+      ctx.fillRect(coverX, coverY, coverWidth, coverHeight);
+
       ctx.setFillStyle(tokens.overlay);
       ctx.fillRect(coverX, 430, coverWidth, 354);
       ctx.restore();
