@@ -123,21 +123,24 @@
       >交给口福</button>
     </view>
 
-    <view wx:if="{{selectedMealId}}" class="row action-row selected-share-row">
-      <button
-        class="btn-secondary"
-        style="flex:1;"
-        data-action="share"
-        bindtouchstart="onPressAction"
-        bindtouchend="onReleaseAction"
-        bindtouchcancel="onReleaseAction"
-        bindtap="goShareResult"
-      >已选：{{selectedMealTitle}} · 去分享</button>
-      <button
-        class="btn-secondary"
-        style="flex:1;"
-        open-type="share"
-      >系统转发</button>
+    <view wx:if="{{selectedMealId}}" class="selected-share-wrap">
+      <view class="selected-share-hint">已选：{{selectedMealTitle}}</view>
+      <view class="row action-row selected-share-row">
+        <button
+          class="btn-secondary"
+          style="flex:1;"
+          data-action="share_image"
+          bindtouchstart="onPressAction"
+          bindtouchend="onReleaseAction"
+          bindtouchcancel="onReleaseAction"
+          bindtap="goShareResult"
+        >分享图片（海报）</button>
+        <button
+          class="btn-secondary"
+          style="flex:1;"
+          open-type="share"
+        >转发小程序卡片</button>
+      </view>
     </view>
   </view>
 

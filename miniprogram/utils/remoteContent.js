@@ -37,7 +37,8 @@ async function fetchRandomMeal() {
 }
 
 async function fetchRandomMeals(count = 8) {
-  const tasks = Array.from({ length: Math.max(1, count) }).map(() =>
+  const requestCount = Math.min(18, Math.max(8, Number(count) || 8));
+  const tasks = Array.from({ length: requestCount }).map(() =>
     fetchRandomMeal().catch(() => null)
   );
 
@@ -76,7 +77,7 @@ async function fetchQuote() {
 }
 
 async function fetchQuotes(count = 4) {
-  const tries = Math.max(4, count * 4);
+  const tries = Math.min(60, Math.max(10, count * 8));
   const tasks = Array.from({ length: tries }).map(() =>
     fetchQuote().catch(() => null)
   );
@@ -90,7 +91,7 @@ async function fetchQuotes(count = 4) {
     dedup.push(item);
   });
 
-  return dedup.slice(0, Math.max(1, count));
+  return dedup.slice(0, Math.max(1, count * 2));
 }
 
 module.exports = {

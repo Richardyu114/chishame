@@ -281,8 +281,18 @@
   margin-bottom: 4rpx;
 }
 
-.selected-share-row {
+.selected-share-wrap {
   margin-top: 10rpx;
+}
+
+.selected-share-hint {
+  margin: 0 4rpx 8rpx;
+  color: #6b6b6b;
+  font-size: 23rpx;
+}
+
+.selected-share-row {
+  margin-top: 0;
 }
 
 .selected-share-row .btn-secondary {

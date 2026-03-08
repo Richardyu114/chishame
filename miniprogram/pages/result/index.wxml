@@ -41,12 +41,13 @@
 
   <view class="card share-meta-card">
     <view class="subtitle">海报模板：{{posterTheme}} · 文案风格：{{copyStyle}}</view>
-    <view class="subtitle" style="margin-top: 6rpx;">支持“生成图片”或“直接分享到朋友圈”。</view>
+    <view class="subtitle" style="margin-top: 6rpx;">支持“分享图片（海报）”与“转发小程序卡片”。</view>
   </view>
 
   <view class="action-stack">
-    <button class="btn-primary" bindtap="openMomentsActions" loading="{{generatingPoster}}" disabled="{{generatingPoster}}">{{generatingPoster ? '生成中...' : '分享到朋友圈'}}</button>
-    <button class="btn-secondary" open-type="share">系统转发（微信）</button>
+    <button class="btn-primary" bindtap="choosePosterThemeThenGenerate" loading="{{generatingPoster}}" disabled="{{generatingPoster}}">{{generatingPoster ? '海报生成中...' : '分享图片（海报）'}}</button>
+    <button class="btn-secondary" open-type="share">转发小程序卡片</button>
+    <button class="btn-secondary" bindtap="chooseCopyStyleThenShare">朋友圈文案分享</button>
     <button class="btn-secondary" bindtap="copyShareText">复制分享文案</button>
     <button class="btn-secondary" bindtap="pickAgain">再翻一页</button>
     <button class="btn-secondary" bindtap="toRecommend">回推荐页</button>

@@ -45,6 +45,16 @@ const veggieWords = [
   '西兰花', '生菜', '菠菜', '白菜', '胡萝卜', '洋葱', '番茄', '青椒', '菌菇', '黄瓜', '茄子', '蔬菜'
 ];
 
+const localCoverPool = Array.from(new Set([
+  '/assets/food/dish.jpg',
+  '/assets/food/hotpot.jpg',
+  '/assets/food/noodle.jpg',
+  '/assets/food/salad.jpg',
+  '/assets/food/spicy.jpg',
+  '/assets/food/sushi.jpg',
+  ...Object.values(data.coverByTag || {})
+]));
+
 function pickOne(list) {
   return list[Math.floor(Math.random() * list.length)];
 }
@@ -56,6 +66,28 @@ function shuffle(arr) {
     [next[i], next[j]] = [next[j], next[i]];
   }
   return next;
+}
+
+function normalizeSet(rows = []) {
+  return new Set((Array.isArray(rows) ? rows : [])
+    .map((row) => String(row || '').trim())
+    .filter(Boolean));
+}
+
+function hashString(text = '') {
+  let hash = 0;
+  const source = String(text || '');
+  for (let i = 0; i < source.length; i += 1) {
+    hash = ((hash << 5) - hash) + source.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash);
+}
+
+function pickBySeed(pool = [], seedText = '') {
+  if (!pool.length) return '';
+  const idx = hashString(seedText || `${Date.now()}`) % pool.length;
+  return pool[idx];
 }
 
 function includeByFlavor(item, preferredFlavor) {
@@ -90,24 +122,83 @@ function explain(staple, protein, veggie, preferredFlavor) {
   return hints.slice(0, 3);
 }
 
-function buildCard(id, staple, protein, veggie, extra, quote, preferredFlavor) {
+function includesAny(text, keywords = []) {
+  return keywords.some((key) => text.includes(key));
+}
+
+function toLowerText(parts = []) {
+  return parts
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+}
+
+function getImageCandidates(parts = [], tags = [], fallback = '/assets/food/dish.jpg') {
+  const text = toLowerText(parts);
+  const keywordImages = imageKeywordMap
+    .filter((row) => includesAny(text, row.keywords))
+    .map((row) => row.image);
+
+  const tagImages = tags
+    .map((tag) => data.coverByTag[tag])
+    .filter(Boolean);
+
+  return Array.from(new Set([
+    ...keywordImages,
+    ...tagImages,
+    ...localCoverPool,
+    fallback
+  ].filter(Boolean)));
+}
+
+function pickCardImage(parts = [], tags = [], fallback = '/assets/food/dish.jpg', options = {}) {
+  const avoidImageSet = options.avoidImageSet || new Set();
+  const candidates = getImageCandidates(parts, tags, fallback);
+  if (!candidates.length) return fallback;
+
+  const freshPool = candidates.filter((src) => !avoidImageSet.has(src));
+  const pickPool = freshPool.length ? freshPool : candidates;
+  return pickBySeed(pickPool, options.seedText || toLowerText(parts));
+}
+
+function buildMealSignatureByParts(title = '', protein = '', staple = '', veggie = '') {
+  return [title, protein, staple, veggie]
+    .map((row) => String(row || '').toLowerCase().trim())
+    .filter(Boolean)
+    .join('|');
+}
+
+function buildMealSignature(card = {}) {
+  return buildMealSignatureByParts(card.title, card.protein, card.staple, card.veggie);
+}
+
+function buildCard(id, staple, protein, veggie, extra, quote, preferredFlavor, options = {}) {
   const tags = Array.from(new Set([
     ...(staple.tags || []),
     ...(protein.tags || []),
     ...(veggie.tags || [])
   ])).slice(0, 3);
 
+  const title = `${protein.name} + ${staple.name}`;
+  const dishLine = `${veggie.name} · ${extra.name}`;
+  const signature = buildMealSignatureByParts(title, protein.name, staple.name, veggie.name);
+
   const image = pickCardImage([
+    title,
+    dishLine,
     staple.name,
     protein.name,
     veggie.name,
     extra.name
-  ], tags, '/assets/food/dish.jpg');
+  ], tags, '/assets/food/dish.jpg', {
+    avoidImageSet: options.avoidImageSet,
+    seedText: options.seedText || signature
+  });
 
   return {
     id: `meal_${id}`,
-    title: `${protein.name} + ${staple.name}`,
-    dishLine: `${veggie.name} · ${extra.name}`,
+    title,
+    dishLine,
     staple: staple.name,
     protein: protein.name,
     veggie: veggie.name,
@@ -117,11 +208,84 @@ function buildCard(id, staple, protein, veggie, extra, quote, preferredFlavor) {
     reasons: explain(staple, protein, veggie, preferredFlavor),
     quote,
     image,
-    shareText: `今天吃这个：${protein.name} + ${staple.name}，再配${veggie.name}。${quote.text}`
+    shareText: `今天吃这个：${title}，再配${veggie.name}。${quote.text}`
   };
 }
 
-function generateMealsLocal(profile = {}, count = 4) {
+function scoreCardFreshness(card = {}, history = {}) {
+  const mealSet = normalizeSet(history.mealSignatures || []);
+  const quoteSet = normalizeSet(history.quoteTexts || []);
+  const imageSet = normalizeSet(history.imageKeys || []);
+
+  let score = Math.random();
+  const signature = buildMealSignature(card);
+
+  if (signature && !mealSet.has(signature)) score += 4;
+  if (card.quote && card.quote.text && !quoteSet.has(card.quote.text)) score += 2;
+  if (card.image && !imageSet.has(card.image)) score += 1.8;
+
+  return score;
+}
+
+function pickFreshQuote(quotePool = [], recentQuoteSet = new Set(), usedQuoteSet = new Set()) {
+  if (!quotePool.length) {
+    return { text: '民以食为天。', from: '《汉书》' };
+  }
+
+  const firstRound = quotePool.filter((quote) => {
+    const text = String((quote && quote.text) || '');
+    return text && !recentQuoteSet.has(text) && !usedQuoteSet.has(text);
+  });
+  if (firstRound.length) {
+    const picked = pickOne(firstRound);
+    usedQuoteSet.add(picked.text);
+    return picked;
+  }
+
+  const secondRound = quotePool.filter((quote) => {
+    const text = String((quote && quote.text) || '');
+    return text && !usedQuoteSet.has(text);
+  });
+  if (secondRound.length) {
+    const picked = pickOne(secondRound);
+    usedQuoteSet.add(picked.text);
+    return picked;
+  }
+
+  const fallback = pickOne(quotePool);
+  if (fallback && fallback.text) usedQuoteSet.add(fallback.text);
+  return fallback || { text: '民以食为天。', from: '《汉书》' };
+}
+
+function assignDistinctImages(cards = [], history = {}) {
+  if (!cards.length) return cards;
+
+  const imageSet = normalizeSet(history.imageKeys || []);
+  const usedInBatch = new Set();
+
+  return cards.map((card) => {
+    if (!card) return card;
+
+    if (/^https?:\/\//.test(card.image || '')) {
+      return card;
+    }
+
+    const nextImage = pickCardImage(
+      [card.title, card.dishLine, card.staple, card.protein, card.veggie, card.extra],
+      card.tags || [],
+      '/assets/food/dish.jpg',
+      {
+        avoidImageSet: new Set([...imageSet, ...usedInBatch]),
+        seedText: `${card.id || ''}|${card.title || ''}`
+      }
+    );
+
+    usedInBatch.add(nextImage);
+    return { ...card, image: nextImage };
+  });
+}
+
+function generateMealsLocal(profile = {}, count = 4, history = {}) {
   const preferredFlavor = profile.preferredFlavor || '随机';
   const tabooTags = profile.tabooTags || [];
 
@@ -135,36 +299,48 @@ function generateMealsLocal(profile = {}, count = 4) {
   const safeVeggies = veggies.length ? veggies : data.veggies.filter((item) => notTaboo(item, tabooTags));
   const safeExtras = extras.length ? extras : data.extras;
 
-  const cards = [];
-  for (let i = 0; i < count; i += 1) {
-    const staple = safeStaples[i % safeStaples.length];
-    const protein = safeProteins[(i + 1) % safeProteins.length];
-    const veggie = safeVeggies[(i + 2) % safeVeggies.length];
-    const extra = safeExtras[i % safeExtras.length];
-    const quote = data.quotes[i % data.quotes.length];
-    cards.push(buildCard(i + 1, staple, protein, veggie, extra, quote, preferredFlavor));
+  const recentQuoteSet = normalizeSet(history.quoteTexts || []);
+  const quotePool = shuffle(data.quotes);
+  const usedQuoteSet = new Set();
+  const avoidImageSet = normalizeSet(history.imageKeys || []);
+
+  const candidateTarget = Math.max(count * 8, 24);
+  const attempts = candidateTarget * 3;
+  const candidateMap = new Map();
+
+  for (let i = 0; i < attempts; i += 1) {
+    const staple = pickOne(safeStaples);
+    const protein = pickOne(safeProteins);
+    const veggie = pickOne(safeVeggies);
+    const extra = pickOne(safeExtras);
+    const quote = pickFreshQuote(quotePool, recentQuoteSet, usedQuoteSet);
+
+    const card = buildCard(i + 1, staple, protein, veggie, extra, quote, preferredFlavor, {
+      avoidImageSet,
+      seedText: `${protein.name}|${staple.name}|${veggie.name}|${extra.name}|${i}`
+    });
+
+    const signature = buildMealSignature(card);
+    if (!signature || candidateMap.has(signature)) continue;
+
+    candidateMap.set(signature, card);
+    if (candidateMap.size >= candidateTarget) break;
   }
-  return shuffle(cards);
-}
 
-function includesAny(text, keywords = []) {
-  return keywords.some((key) => text.includes(key));
-}
+  const candidates = [...candidateMap.values()];
+  if (!candidates.length) return [];
 
-function toLowerText(parts = []) {
-  return parts
-    .filter(Boolean)
-    .join(' ')
-    .toLowerCase();
-}
+  const scored = candidates
+    .map((card) => ({ card, score: scoreCardFreshness(card, history) }))
+    .sort((a, b) => b.score - a.score)
+    .map((row) => row.card);
 
-function pickCardImage(parts = [], tags = [], fallback = '/assets/food/dish.jpg') {
-  const text = toLowerText(parts);
-  const byKeyword = imageKeywordMap.find((row) => includesAny(text, row.keywords));
-  if (byKeyword) return byKeyword.image;
+  const picked = scored.slice(0, count);
+  const filled = picked.length >= count
+    ? picked
+    : [...picked, ...shuffle(candidates).slice(0, Math.max(0, count - picked.length))];
 
-  const imageTag = tags.find((t) => data.coverByTag[t]) || '日常';
-  return data.coverByTag[imageTag] || fallback;
+  return shuffle(assignDistinctImages(filled.slice(0, count), history));
 }
 
 function extractIngredients(meal = {}) {
@@ -273,7 +449,7 @@ function pickFallbackLocalNames() {
   };
 }
 
-function buildRemoteCard(meal, quote, preferredFlavor, index) {
+function buildRemoteCard(meal, quote, preferredFlavor, index, options = {}) {
   const ingredients = extractIngredients(meal);
   const classified = classifyIngredients(ingredients);
   const fallback = pickFallbackLocalNames();
@@ -284,20 +460,26 @@ function buildRemoteCard(meal, quote, preferredFlavor, index) {
   const veggie = classified.veggie[0] || fallback.veggie;
   const extra = classified.extra[0] || fallback.extra;
 
+  const defaultImage = pickCardImage([
+    meal.strMeal,
+    meal.strCategory,
+    meal.strArea,
+    ...ingredients
+  ], tags, '/assets/food/dish.jpg', {
+    avoidImageSet: options.avoidImageSet,
+    seedText: `${meal.idMeal || index + 1}|${meal.strMeal || ''}`
+  });
+
   const image = /^https?:\/\//.test(meal.strMealThumb || '')
     ? meal.strMealThumb
-    : pickCardImage([
-      meal.strMeal,
-      meal.strCategory,
-      meal.strArea,
-      ...ingredients
-    ], tags, '/assets/food/dish.jpg');
+    : defaultImage;
 
   const safeQuote = quote || pickOne(data.quotes);
   const title = meal.strMeal || `${protein} + ${staple}`;
 
   return {
     id: `meal_remote_${meal.idMeal || index + 1}`,
+    remoteMealId: String(meal.idMeal || ''),
     title,
     dishLine: `${veggie} · ${extra}`,
     staple,
@@ -359,13 +541,26 @@ function withTimeout(promise, timeoutMs = REMOTE_BUDGET_MS) {
   ]);
 }
 
-async function generateMealsRemote(profile = {}, count = 4) {
+function dedupeQuotes(quotes = []) {
+  const map = new Map();
+  quotes.forEach((quote) => {
+    const text = String((quote && quote.text) || '').trim();
+    if (!text || map.has(text)) return;
+    map.set(text, {
+      text,
+      from: String((quote && quote.from) || '').trim() || '古诗文'
+    });
+  });
+  return [...map.values()];
+}
+
+async function generateMealsRemote(profile = {}, count = 4, history = {}) {
   const preferredFlavor = profile.preferredFlavor || '随机';
   const tabooTags = profile.tabooTags || [];
 
   const [meals, quotes] = await Promise.all([
-    remoteContent.fetchRandomMeals(Math.max(5, count * 2)),
-    remoteContent.fetchQuotes(Math.max(3, count))
+    remoteContent.fetchRandomMeals(Math.max(10, count * 3)),
+    remoteContent.fetchQuotes(Math.max(6, count * 2))
   ]);
 
   if (!meals.length) return [];
@@ -373,21 +568,42 @@ async function generateMealsRemote(profile = {}, count = 4) {
   const noTaboo = meals.filter((meal) => !hitsTaboo(meal, tabooTags));
   const tabooSafe = noTaboo.length ? noTaboo : meals;
 
-  const flavorMatched = tabooSafe.filter((meal) => matchPreferredFlavor(meal, preferredFlavor));
-  const picked = shuffle(flavorMatched.length ? flavorMatched : tabooSafe).slice(0, count);
+  const recentRemoteSet = normalizeSet(history.remoteMealIds || []);
+  const recentQuoteSet = normalizeSet(history.quoteTexts || []);
+  const imageHistorySet = normalizeSet(history.imageKeys || []);
+
+  const freshRemote = tabooSafe.filter((meal) => !recentRemoteSet.has(String(meal.idMeal || '')));
+  const freshnessPool = freshRemote.length >= count ? freshRemote : tabooSafe;
+
+  const flavorMatched = freshnessPool.filter((meal) => matchPreferredFlavor(meal, preferredFlavor));
+  const pickedPool = flavorMatched.length ? flavorMatched : freshnessPool;
+  const picked = shuffle(pickedPool).slice(0, count);
 
   if (!picked.length) return [];
 
-  return picked.map((meal, idx) => buildRemoteCard(meal, quotes[idx % Math.max(1, quotes.length)], preferredFlavor, idx));
+  const quotePool = dedupeQuotes([...(quotes || []), ...(data.quotes || [])]);
+  const usedQuoteSet = new Set();
+  const usedImageSet = new Set();
+
+  return picked.map((meal, idx) => {
+    const quote = pickFreshQuote(quotePool, recentQuoteSet, usedQuoteSet);
+    const card = buildRemoteCard(meal, quote, preferredFlavor, idx, {
+      avoidImageSet: new Set([...imageHistorySet, ...usedImageSet]),
+      seedText: `${meal.idMeal || ''}|${meal.strMeal || ''}|${idx}`
+    });
+
+    usedImageSet.add(card.image);
+    return card;
+  });
 }
 
-async function generateMeals(profile = {}, count = 4, logs = []) {
+async function generateMeals(profile = {}, count = 4, logs = [], history = {}) {
   const activeMealMode = profile.activeMealMode || personalize.resolveMealMode(profile.mealMode || '智能');
   const expandedCount = Math.max(count + 3, 6);
 
   // 网络优先：先拉远端内容，不可用时自动回退本地池。
   try {
-    const remoteCards = await withTimeout(generateMealsRemote(profile, expandedCount), REMOTE_BUDGET_MS);
+    const remoteCards = await withTimeout(generateMealsRemote(profile, expandedCount, history), REMOTE_BUDGET_MS);
     if (remoteCards.length >= count) {
       const modeCards = applyMealMode(remoteCards, activeMealMode);
       return applySevenDayDedupe(modeCards, logs, count);
@@ -396,7 +612,7 @@ async function generateMeals(profile = {}, count = 4, logs = []) {
     // 网络不可用或超时 -> 回退本地池
   }
 
-  const localCards = generateMealsLocal(profile, expandedCount);
+  const localCards = generateMealsLocal(profile, expandedCount, history);
   const modeCards = applyMealMode(localCards, activeMealMode);
   return applySevenDayDedupe(modeCards, logs, count);
 }

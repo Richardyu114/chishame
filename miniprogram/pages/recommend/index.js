@@ -250,13 +250,15 @@ Page({
     this.setData({ loading: true, busyAction: triggerAction });
 
     const { profile, logs, activeMealMode, flavorDriftHint } = this.buildEngineProfileAndHint();
+    const history = storage.getContentHistory();
 
     foodEngine
-      .generateMeals(profile, 4, logs)
+      .generateMeals(profile, 4, logs, history)
       .then((cards) => {
         if (this._loadToken !== currentToken) return;
 
         const normalizedCards = Array.isArray(cards) ? cards : [];
+        storage.rememberGeneratedCards(normalizedCards);
         this.preloadCardImages(normalizedCards);
 
         const minLoading = 180;
@@ -401,7 +403,7 @@ Page({
     });
 
     wx.showToast({
-      title: '已选中，可去分享',
+      title: '已选中，可分享图片或小程序',
       icon: 'success'
     });
   }
