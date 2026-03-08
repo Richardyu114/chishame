@@ -385,19 +385,15 @@ async function generateMeals(profile = {}, count = 4, logs = []) {
   const activeMealMode = profile.activeMealMode || personalize.resolveMealMode(profile.mealMode || '智能');
   const expandedCount = Math.max(count + 3, 6);
 
-  // 默认中文优先：走本地结构化数据。
-  const useRemote = profile.useRemote === true;
-
-  if (useRemote) {
-    try {
-      const remoteCards = await withTimeout(generateMealsRemote(profile, expandedCount), REMOTE_BUDGET_MS);
-      if (remoteCards.length >= count) {
-        const modeCards = applyMealMode(remoteCards, activeMealMode);
-        return applySevenDayDedupe(modeCards, logs, count);
-      }
-    } catch (err) {
-      // 网络不可用或超时 -> 回退本地池
+  // 网络优先：先拉远端内容，不可用时自动回退本地池。
+  try {
+    const remoteCards = await withTimeout(generateMealsRemote(profile, expandedCount), REMOTE_BUDGET_MS);
+    if (remoteCards.length >= count) {
+      const modeCards = applyMealMode(remoteCards, activeMealMode);
+      return applySevenDayDedupe(modeCards, logs, count);
     }
+  } catch (err) {
+    // 网络不可用或超时 -> 回退本地池
   }
 
   const localCards = generateMealsLocal(profile, expandedCount);

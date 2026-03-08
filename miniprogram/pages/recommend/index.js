@@ -10,6 +10,16 @@ function getTimeSlot() {
   return '夜宵灵感';
 }
 
+function safeDecode(value = '') {
+  const raw = String(value || '');
+  if (!raw) return '';
+  try {
+    return decodeURIComponent(raw);
+  } catch (err) {
+    return raw;
+  }
+}
+
 const flavorCycle = ['随机', '清淡', '均衡', '下饭', '浓香', '辛辣', '轻食'];
 const mealModeCycle = ['智能', '午餐', '晚餐'];
 
@@ -31,9 +41,10 @@ Page({
     selectedMealTitle: ''
   },
 
-  onLoad() {
+  onLoad(options = {}) {
     this._loadToken = 0;
     this._successTimer = null;
+    this._entryOptions = options || {};
   },
 
   onShow() {
@@ -41,7 +52,8 @@ Page({
     const logs = storage.getLogs();
     const activeMealMode = personalize.resolveMealMode(profile.mealMode || '智能');
     const drift = personalize.buildFlavorDrift(logs);
-    const selected = storage.getSelected();
+    const sharedSelected = this.consumeSharedSelected();
+    const selected = sharedSelected || storage.getSelected();
 
     this.setData({
       preferredFlavor: profile.preferredFlavor || '随机',
@@ -92,6 +104,42 @@ Page({
     });
   },
 
+  consumeSharedSelected() {
+    const options = this._entryOptions || {};
+    this._entryOptions = {};
+
+    const selectedId = safeDecode(options.selected || '');
+    const selectedTitle = safeDecode(options.title || '');
+    if (!selectedId && !selectedTitle) return null;
+
+    const existing = storage.getSelected();
+    if (existing && selectedId && String(existing.id || '') === selectedId) {
+      const merged = {
+        ...existing,
+        title: selectedTitle || existing.title || '',
+        fromShare: true,
+        ts: Date.now()
+      };
+      storage.setSelected(merged);
+      return merged;
+    }
+
+    const fromCards = selectedId
+      ? (this.data.cards || []).find((item) => String((item && item.id) || '') === selectedId)
+      : null;
+
+    const fallback = {
+      id: selectedId || `shared_${Date.now()}`,
+      title: selectedTitle || '朋友推荐',
+      fromShare: true,
+      ts: Date.now()
+    };
+
+    const next = fromCards ? { ...fromCards, fromShare: true, ts: Date.now() } : fallback;
+    storage.setSelected(next);
+    return next;
+  },
+
   markActionSuccess(action) {
     if (this._successTimer) clearTimeout(this._successTimer);
     this.setData({ successAction: action || '' });
@@ -105,8 +153,14 @@ Page({
     return this.data.cards[idx] || null;
   },
 
-  buildRecommendShareTitle() {
-    const selectedTitle = this.data.selectedMealTitle;
+  getShareCandidate() {
+    const selected = storage.getSelected();
+    if (selected && (selected.id || selected.title)) return selected;
+    return this.getCurrentCard() || null;
+  },
+
+  buildRecommendShareTitle(overrideTitle = '') {
+    const selectedTitle = overrideTitle || this.data.selectedMealTitle;
     if (selectedTitle) {
       return `我今天选了：${selectedTitle}｜吃啥么`;
     }
@@ -119,17 +173,39 @@ Page({
     return '吃啥么｜今天吃什么';
   },
 
-  onShareAppMessage() {
+  buildRecommendSharePayload() {
+    const candidate = this.getShareCandidate();
+    const selectedId = (candidate && candidate.id && String(candidate.id)) || '';
+    const selectedTitle = (candidate && candidate.title && String(candidate.title)) || '';
+
     return {
-      title: this.buildRecommendShareTitle(),
-      path: '/pages/recommend/index'
+      title: this.buildRecommendShareTitle(selectedTitle),
+      selectedId,
+      selectedTitle
+    };
+  },
+
+  onShareAppMessage() {
+    const payload = this.buildRecommendSharePayload();
+    const query = [];
+    if (payload.selectedId) query.push(`selected=${encodeURIComponent(payload.selectedId)}`);
+    if (payload.selectedTitle) query.push(`title=${encodeURIComponent(payload.selectedTitle)}`);
+
+    return {
+      title: payload.title,
+      path: query.length ? `/pages/recommend/index?${query.join('&')}` : '/pages/recommend/index'
     };
   },
 
   onShareTimeline() {
+    const payload = this.buildRecommendSharePayload();
+    const query = [];
+    if (payload.selectedId) query.push(`selected=${encodeURIComponent(payload.selectedId)}`);
+    if (payload.selectedTitle) query.push(`title=${encodeURIComponent(payload.selectedTitle)}`);
+
     return {
-      title: this.buildRecommendShareTitle(),
-      query: this.data.selectedMealId ? `selected=${encodeURIComponent(this.data.selectedMealId)}` : ''
+      title: payload.title,
+      query: query.join('&')
     };
   },
 
@@ -279,7 +355,18 @@ Page({
   goShareResult() {
     this.triggerLightHaptic();
     this.setData({ pressedAction: '' });
-    const selected = storage.getSelected();
+
+    let selected = storage.getSelected();
+    if (!selected && (this.data.selectedMealId || this.data.selectedMealTitle)) {
+      selected = {
+        id: this.data.selectedMealId || `shared_${Date.now()}`,
+        title: this.data.selectedMealTitle || '朋友推荐',
+        fromShare: true,
+        ts: Date.now()
+      };
+      storage.setSelected(selected);
+    }
+
     if (!selected) {
       wx.showToast({ title: '先选一个“今天吃这个”', icon: 'none' });
       return;
@@ -310,8 +397,7 @@ Page({
     storage.appendLog(log);
     this.setData({
       selectedMealId: item.id || '',
-      selectedMealTitle: item.title || '',
-      currentCardIndex: this.data.currentCardIndex
+      selectedMealTitle: item.title || ''
     });
 
     wx.showToast({

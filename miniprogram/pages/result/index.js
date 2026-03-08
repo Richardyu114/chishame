@@ -116,19 +116,29 @@ Page({
     storage.setProfile(merged);
   },
 
+  buildShareQuery(meal) {
+    const query = [];
+    if (meal && meal.id) query.push(`selected=${encodeURIComponent(String(meal.id))}`);
+    if (meal && meal.title) query.push(`title=${encodeURIComponent(String(meal.title))}`);
+    return query;
+  },
+
   onShareAppMessage() {
     const meal = this.data.meal;
+    const query = this.buildShareQuery(meal);
     return {
       title: composeShareText(meal, this.data.copyStyle),
-      path: '/pages/recommend/index'
+      path: query.length ? `/pages/recommend/index?${query.join('&')}` : '/pages/recommend/index'
     };
   },
 
   onShareTimeline() {
     const meal = this.data.meal;
+    const query = this.buildShareQuery(meal);
+    query.push(`from=timeline`, `style=${encodeURIComponent(this.data.copyStyle)}`);
     return {
       title: composeShareText(meal, this.data.copyStyle),
-      query: `from=timeline&style=${encodeURIComponent(this.data.copyStyle)}`
+      query: query.join('&')
     };
   },
 

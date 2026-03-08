@@ -11,7 +11,7 @@ const defaultProfile = {
   mealMode: '智能',
   shareCopyStyle: '克制版',
   posterTheme: '极简',
-  useRemote: false,
+  useRemote: true,
   tasteWeights: {
     清淡: 0,
     均衡: 1,
@@ -37,6 +37,10 @@ function normalizeProfile(profile = {}) {
   if (!merged.preferredFlavor) {
     merged.preferredFlavor = '随机';
   }
+
+  // v0.8 起固定网络优先：旧版本遗留的 false 统一迁移为 true。
+  merged.useRemote = true;
+
   return merged;
 }
 
