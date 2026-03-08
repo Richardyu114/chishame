@@ -30,11 +30,12 @@ const proteinWords = [
 ];
 
 const imageKeywordMap = [
-  { keywords: ['noodle', 'pasta', 'ramen', '面', '粉'], image: '/assets/food/noodle.jpg' },
+  { keywords: ['noodle', 'pasta', 'ramen', 'udon', '面', '粉'], image: '/assets/food/noodle.jpg' },
   { keywords: ['sushi', 'fish', 'shrimp', 'prawn', 'seafood', '寿司', '鱼', '虾', '海鲜'], image: '/assets/food/sushi.jpg' },
   { keywords: ['spicy', 'chili', 'pepper', 'curry', 'hot', '辣', '麻辣', '咖喱'], image: '/assets/food/spicy.jpg' },
-  { keywords: ['hotpot', 'stew', 'braised', 'roast', '锅', '炖', '红烧'], image: '/assets/food/hotpot.jpg' },
-  { keywords: ['salad', 'vegetable', 'veggie', 'light', '轻食', '蔬菜', '沙拉'], image: '/assets/food/salad.jpg' }
+  { keywords: ['hotpot', 'stew', 'braised', 'roast', '锅', '炖', '红烧', '牛肉', '里脊', '鸭胸'], image: '/assets/food/hotpot.jpg' },
+  { keywords: ['salad', 'vegetable', 'veggie', 'light', '轻食', '蔬菜', '沙拉', '藜麦', '燕麦'], image: '/assets/food/salad.jpg' },
+  { keywords: ['chicken', 'pork', 'tofu', 'egg', '鸡', '豆腐', '鸡蛋', '番茄'], image: '/assets/food/dish.jpg' }
 ];
 
 const REMOTE_BUDGET_MS = 1600;
@@ -50,8 +51,20 @@ const relatedImageMap = {
   '/assets/food/sushi.jpg': ['/assets/food/sushi.jpg', '/assets/food/dish.jpg'],
   '/assets/food/spicy.jpg': ['/assets/food/spicy.jpg', '/assets/food/hotpot.jpg', '/assets/food/dish.jpg'],
   '/assets/food/hotpot.jpg': ['/assets/food/hotpot.jpg', '/assets/food/spicy.jpg', '/assets/food/dish.jpg'],
-  '/assets/food/salad.jpg': ['/assets/food/salad.jpg', '/assets/food/dish.jpg'],
-  '/assets/food/dish.jpg': ['/assets/food/dish.jpg']
+  '/assets/food/salad.jpg': ['/assets/food/salad.jpg', '/assets/food/dish.jpg', '/assets/food/sushi.jpg'],
+  '/assets/food/dish.jpg': ['/assets/food/dish.jpg', '/assets/food/noodle.jpg', '/assets/food/salad.jpg']
+};
+
+const tagImagePool = {
+  清淡: ['/assets/food/salad.jpg', '/assets/food/dish.jpg', '/assets/food/sushi.jpg'],
+  均衡: ['/assets/food/dish.jpg', '/assets/food/salad.jpg', '/assets/food/noodle.jpg'],
+  下饭: ['/assets/food/hotpot.jpg', '/assets/food/spicy.jpg', '/assets/food/dish.jpg'],
+  浓香: ['/assets/food/hotpot.jpg', '/assets/food/dish.jpg', '/assets/food/spicy.jpg'],
+  辛辣: ['/assets/food/spicy.jpg', '/assets/food/hotpot.jpg'],
+  面食: ['/assets/food/noodle.jpg', '/assets/food/dish.jpg'],
+  轻食: ['/assets/food/salad.jpg', '/assets/food/sushi.jpg', '/assets/food/dish.jpg'],
+  日常: ['/assets/food/dish.jpg', '/assets/food/noodle.jpg', '/assets/food/hotpot.jpg'],
+  鲜香: ['/assets/food/sushi.jpg', '/assets/food/dish.jpg']
 };
 
 function pickOne(list) {
@@ -139,7 +152,7 @@ function getImageCandidates(parts = [], tags = [], fallback = '/assets/food/dish
     .map((row) => row.image);
 
   const tagImages = tags
-    .map((tag) => data.coverByTag[tag])
+    .flatMap((tag) => tagImagePool[tag] || [data.coverByTag[tag]])
     .filter(Boolean);
 
   const base = Array.from(new Set([
@@ -155,7 +168,19 @@ function getImageCandidates(parts = [], tags = [], fallback = '/assets/food/dish
     expanded.push(...related);
   });
 
-  return Array.from(new Set(expanded.filter(Boolean)));
+  // 若语义池过小，补入同标签池，减少“背景单一”体感。
+  const semanticPool = Array.from(new Set(expanded.filter(Boolean)));
+  if (semanticPool.length >= 3) return semanticPool;
+
+  const backupFromTags = tags
+    .flatMap((tag) => tagImagePool[tag] || [])
+    .filter(Boolean);
+
+  return Array.from(new Set([
+    ...semanticPool,
+    ...backupFromTags,
+    fallback
+  ]));
 }
 
 function pickCardImage(parts = [], tags = [], fallback = '/assets/food/dish.jpg', options = {}) {

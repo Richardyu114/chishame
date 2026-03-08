@@ -349,8 +349,8 @@ Page({
     this.setData({ generatingPoster: true });
     wx.showLoading({ title: '海报绘制中', mask: true });
 
-    this.getImagePath(meal.image)
-      .then((imagePath) => this.drawPoster(meal, imagePath, this.data.posterTheme))
+    this.getImageAsset(meal.image)
+      .then((imageAsset) => this.drawPoster(meal, imageAsset, this.data.posterTheme))
       .then((tempPath) => this.savePosterToAlbum(tempPath))
       .catch((err) => {
         const message = err && err.message ? err.message : String(err || 'unknown error');
@@ -362,19 +362,54 @@ Page({
       });
   },
 
-  getImagePath(src) {
+  getImageAsset(src) {
     return new Promise((resolve) => {
-      if (!src || /^\//.test(src)) {
-        resolve(src || '/assets/food/dish.jpg');
-        return;
-      }
+      const fallback = '/assets/food/dish.jpg';
+      const target = src || fallback;
 
       wx.getImageInfo({
-        src,
-        success: (res) => resolve(res.path || src),
-        fail: () => resolve('/assets/food/dish.jpg')
+        src: target,
+        success: (res) => resolve({
+          path: res.path || target,
+          width: Number(res.width || 0),
+          height: Number(res.height || 0)
+        }),
+        fail: () => resolve({
+          path: fallback,
+          width: 0,
+          height: 0
+        })
       });
     });
+  },
+
+  drawCoverImage(ctx, imageAsset, x, y, width, height) {
+    const path = (imageAsset && imageAsset.path) || '/assets/food/dish.jpg';
+    const imageWidth = Number((imageAsset && imageAsset.width) || 0);
+    const imageHeight = Number((imageAsset && imageAsset.height) || 0);
+
+    if (!imageWidth || !imageHeight) {
+      ctx.drawImage(path, x, y, width, height);
+      return;
+    }
+
+    const boxRatio = width / height;
+    const imageRatio = imageWidth / imageHeight;
+
+    let sx = 0;
+    let sy = 0;
+    let sw = imageWidth;
+    let sh = imageHeight;
+
+    if (imageRatio > boxRatio) {
+      sw = imageHeight * boxRatio;
+      sx = (imageWidth - sw) / 2;
+    } else if (imageRatio < boxRatio) {
+      sh = imageWidth / boxRatio;
+      sy = (imageHeight - sh) / 2;
+    }
+
+    ctx.drawImage(path, sx, sy, sw, sh, x, y, width, height);
   },
 
   buildTodaySign(meal) {
@@ -386,7 +421,7 @@ Page({
     return `今日签：${todaySigns[index]}`;
   },
 
-  drawPoster(meal, imagePath, theme = '极简') {
+  drawPoster(meal, imageAsset, theme = '极简') {
     return new Promise((resolve, reject) => {
       const tokens = getThemeTokens(theme);
       const ctx = wx.createCanvasContext('sharePosterCanvas', this);
@@ -400,7 +435,7 @@ Page({
       ctx.setFillStyle(tokens.bg);
       ctx.fillRect(0, 0, POSTER_WIDTH, POSTER_HEIGHT);
 
-      ctx.drawImage(imagePath, 0, 0, POSTER_WIDTH, coverHeight);
+      this.drawCoverImage(ctx, imageAsset, 0, 0, POSTER_WIDTH, coverHeight);
       ctx.setFillStyle(tokens.ribbonBg);
       ctx.fillRect(0, 0, POSTER_WIDTH, 130);
       ctx.setFillStyle(tokens.overlay);

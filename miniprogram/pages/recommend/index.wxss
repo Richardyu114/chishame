@@ -20,7 +20,7 @@
 .top-title {
   margin-top: 6rpx;
   font-size: 42rpx;
-  font-family: "Source Han Serif SC", "Noto Serif CJK SC", "STSong", "Songti SC", serif;
+  font-weight: 700;
 }
 
 .meta-row {
@@ -130,7 +130,6 @@
   font-size: 42rpx;
   font-weight: 700;
   margin-top: 14rpx;
-  font-family: "Source Han Serif SC", "Noto Serif CJK SC", "STSong", "Songti SC", serif;
   text-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.35);
 }
 
