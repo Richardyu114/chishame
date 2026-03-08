@@ -21,10 +21,10 @@ page {
 
 .card {
   background: #fcfbf8;
-  border-radius: 28rpx;
+  border-radius: 30rpx;
   padding: 24rpx;
   border: 1rpx solid #ece8dd;
-  box-shadow: 0 12rpx 30rpx rgba(47, 53, 46, 0.08);
+  box-shadow: 0 10rpx 26rpx rgba(35, 39, 35, 0.08);
   margin-bottom: 20rpx;
 }
 
@@ -67,20 +67,22 @@ button[disabled] {
 }
 
 .btn-primary {
-  background: #2f5d50;
+  background: linear-gradient(160deg, #376a5c, #2f5d50);
   color: #fff;
   border-radius: 999rpx;
+  min-height: 78rpx;
   padding: 18rpx 24rpx;
   text-align: center;
   border: 1rpx solid #2a5146;
-  box-shadow: 0 10rpx 20rpx rgba(47, 93, 80, 0.24);
+  box-shadow: 0 10rpx 22rpx rgba(47, 93, 80, 0.24);
 }
 
 .btn-secondary {
-  background: #f2efe7;
+  background: #f4f1e9;
   color: #2f5d50;
   border: 1rpx solid #dbd3c1;
   border-radius: 999rpx;
+  min-height: 76rpx;
   padding: 16rpx 24rpx;
   text-align: center;
 }

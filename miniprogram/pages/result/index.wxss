@@ -58,6 +58,8 @@
 
 .info-row {
   margin-top: 12rpx;
+  padding-bottom: 8rpx;
+  border-bottom: 1rpx solid #eee7d8;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -70,6 +72,11 @@
 .info-value {
   color: #1f1f1f;
   font-weight: 600;
+}
+
+.info-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
 }
 
 .quote {
@@ -154,7 +161,7 @@
   margin-top: 10rpx;
   color: #2d2b27;
   font-size: 24rpx;
-  line-height: 1.62;
+  line-height: 1.64;
   white-space: pre-line;
 }
 

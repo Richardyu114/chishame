@@ -4,10 +4,10 @@
 }
 
 .top-bar {
-  margin-bottom: 18rpx;
-  border-radius: 30rpx;
-  background: linear-gradient(150deg, #fcfbf8, #f4f0e6);
-  border-color: #e6dfce;
+  margin-bottom: 16rpx;
+  border-radius: 32rpx;
+  background: linear-gradient(152deg, #fdfcf8, #f2eee2);
+  border-color: #e4dcc9;
 }
 
 .app-name {
@@ -28,8 +28,8 @@
 }
 
 .control-row {
-  margin-top: 14rpx;
-  gap: 12rpx;
+  margin-top: 12rpx;
+  gap: 10rpx;
 }
 
 .flavor-chip,
@@ -37,7 +37,7 @@
   min-width: 190rpx;
   text-align: center;
   font-size: 22rpx;
-  background: #f1ebe0;
+  background: #f3eee3;
   border-color: #d8cfbc;
 }
 
@@ -78,16 +78,16 @@
 }
 
 .poker-swiper {
-  height: 888rpx;
+  height: 900rpx;
 }
 
 .poker-card {
-  height: 852rpx;
-  border-radius: 30rpx;
+  height: 864rpx;
+  border-radius: 32rpx;
   overflow: hidden;
   position: relative;
   background: #eceae4;
-  box-shadow: 0 20rpx 44rpx rgba(40, 43, 39, 0.18);
+  box-shadow: 0 18rpx 36rpx rgba(34, 38, 35, 0.2);
   animation: cardIn 220ms ease both;
   transition: transform 220ms ease, opacity 220ms ease, filter 220ms ease;
 }
@@ -99,9 +99,9 @@
 }
 
 .card-side {
-  transform: scale(0.965);
-  opacity: 0.9;
-  filter: saturate(0.85);
+  transform: scale(0.972);
+  opacity: 0.92;
+  filter: saturate(0.9);
 }
 
 .poker-bg {
@@ -122,7 +122,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  padding: 28rpx;
+  padding: 30rpx 30rpx 32rpx;
   color: #ffffff;
 }
 
@@ -164,10 +164,10 @@
 
 .quote-box {
   margin-top: 16rpx;
-  padding: 14rpx;
-  border-radius: 16rpx;
-  background: rgba(255, 255, 255, 0.14);
-  border: 1rpx solid rgba(255, 255, 255, 0.24);
+  padding: 15rpx 16rpx;
+  border-radius: 18rpx;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1rpx solid rgba(255, 255, 255, 0.26);
 }
 
 .quote-text {
@@ -182,10 +182,14 @@
 }
 
 .card-indicator {
+  width: fit-content;
+  margin: 12rpx auto 8rpx;
+  padding: 4rpx 14rpx;
   text-align: center;
   color: #6b6b6b;
-  font-size: 24rpx;
-  margin: 14rpx 0 8rpx;
+  font-size: 22rpx;
+  border-radius: 999rpx;
+  background: rgba(242, 237, 226, 0.9);
 }
 
 .skeleton-wrap {
@@ -277,8 +281,8 @@
 }
 
 .action-row {
-  margin-top: 16rpx;
-  gap: 16rpx;
+  margin-top: 14rpx;
+  gap: 12rpx;
 }
 
 .bottom-actions {
