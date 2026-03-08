@@ -66,10 +66,13 @@ function getThemeTokens(theme = '极简') {
       overlay: 'rgba(62, 39, 17, 0.34)',
       panel: '#FFF8EB',
       panelBorder: '#E0D1B2',
+      panelSoft: '#F7ECD8',
       title: '#4A3424',
       body: '#6F5A45',
       accent: '#B88945',
-      heroText: '#FFF9EE'
+      heroText: '#FFF9EE',
+      ribbonBg: 'rgba(74, 52, 36, 0.42)',
+      quotePanel: 'rgba(255, 249, 238, 0.88)'
     };
   }
 
@@ -79,10 +82,13 @@ function getThemeTokens(theme = '极简') {
       overlay: 'rgba(0, 0, 0, 0.46)',
       panel: '#1A1E28',
       panelBorder: '#2B3242',
+      panelSoft: '#202737',
       title: '#F1F4FA',
       body: '#AAB2C5',
       accent: '#8DA9FF',
-      heroText: '#F4F7FF'
+      heroText: '#F4F7FF',
+      ribbonBg: 'rgba(20, 26, 38, 0.52)',
+      quotePanel: 'rgba(26, 31, 44, 0.84)'
     };
   }
 
@@ -91,11 +97,29 @@ function getThemeTokens(theme = '极简') {
     overlay: 'rgba(15, 16, 15, 0.30)',
     panel: '#FCFBF8',
     panelBorder: '#E6DFCE',
+    panelSoft: '#F4EFE4',
     title: '#1F1F1F',
     body: '#6B6B6B',
     accent: '#C6A969',
-    heroText: '#FFFFFF'
+    heroText: '#FFFFFF',
+    ribbonBg: 'rgba(38, 40, 38, 0.34)',
+    quotePanel: 'rgba(252, 251, 248, 0.88)'
   };
+}
+
+function drawRoundedRect(ctx, x, y, width, height, radius = 16) {
+  const r = Math.max(0, Math.min(radius, Math.min(width, height) / 2));
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + width - r, y);
+  ctx.arc(x + width - r, y + r, r, -Math.PI / 2, 0);
+  ctx.lineTo(x + width, y + height - r);
+  ctx.arc(x + width - r, y + height - r, r, 0, Math.PI / 2);
+  ctx.lineTo(x + r, y + height);
+  ctx.arc(x + r, y + height - r, r, Math.PI / 2, Math.PI);
+  ctx.lineTo(x, y + r);
+  ctx.arc(x + r, y + r, r, Math.PI, Math.PI * 1.5);
+  ctx.closePath();
 }
 
 Page({
@@ -368,7 +392,7 @@ Page({
       const ctx = wx.createCanvasContext('sharePosterCanvas', this);
       const dateText = formatDate(new Date());
       const signText = this.buildTodaySign(meal);
-      const coverHeight = 760;
+      const coverHeight = 778;
 
       // 以 2x 画布绘制，避免导出海报文字与线条发虚。
       ctx.scale(POSTER_SCALE, POSTER_SCALE);
@@ -377,37 +401,50 @@ Page({
       ctx.fillRect(0, 0, POSTER_WIDTH, POSTER_HEIGHT);
 
       ctx.drawImage(imagePath, 0, 0, POSTER_WIDTH, coverHeight);
-      ctx.setFillStyle('rgba(16, 16, 16, 0.18)');
-      ctx.fillRect(0, 0, POSTER_WIDTH, 120);
+      ctx.setFillStyle(tokens.ribbonBg);
+      ctx.fillRect(0, 0, POSTER_WIDTH, 130);
       ctx.setFillStyle(tokens.overlay);
-      ctx.fillRect(0, 440, POSTER_WIDTH, 320);
+      ctx.fillRect(0, 420, POSTER_WIDTH, 358);
+
+      ctx.setStrokeStyle('rgba(255,255,255,0.24)');
+      ctx.setLineWidth(1.4);
+      ctx.strokeRect(18, 18, POSTER_WIDTH - 36, POSTER_HEIGHT - 36);
 
       ctx.setFillStyle(tokens.heroText);
-      ctx.setFontSize(30);
-      ctx.fillText('吃啥么', 40, 76);
+      ctx.setFontSize(31);
+      ctx.fillText('吃啥么', 44, 78);
       ctx.setFontSize(21);
-      ctx.fillText(`${dateText} · ${theme}`, 40, 108);
+      ctx.fillText(dateText, 44, 112);
+
+      drawRoundedRect(ctx, 618, 46, 90, 34, 17);
+      ctx.setFillStyle('rgba(255,255,255,0.20)');
+      ctx.fill();
+      ctx.setFillStyle(tokens.heroText);
+      ctx.setFontSize(20);
+      ctx.fillText(theme, 646, 69);
 
       const title = meal.title || '今日餐案';
-      ctx.setFontSize(52);
-      this.drawWrappedText(ctx, title, 40, 620, 670, 62, 2);
+      ctx.setFontSize(54);
+      this.drawWrappedText(ctx, title, 44, 620, 662, 64, 2);
 
       ctx.setFontSize(24);
       ctx.setFillStyle('rgba(255, 255, 255, 0.92)');
-      this.drawWrappedText(ctx, meal.dishLine || '', 40, 720, 670, 34, 1);
+      this.drawWrappedText(ctx, meal.dishLine || '', 44, 722, 662, 34, 1);
 
+      drawRoundedRect(ctx, 30, 804, 690, 418, 24);
       ctx.setFillStyle(tokens.panel);
-      ctx.fillRect(26, 788, 698, 430);
-      ctx.setStrokeStyle(tokens.panelBorder);
+      ctx.fill();
       ctx.setLineWidth(2);
-      ctx.strokeRect(26, 788, 698, 430);
+      ctx.setStrokeStyle(tokens.panelBorder);
+      ctx.stroke();
 
+      ctx.setFillStyle(tokens.panelSoft);
+      ctx.fillRect(30, 804, 690, 88);
       ctx.setFillStyle(tokens.accent);
-      ctx.fillRect(52, 828, 6, 106);
-
+      ctx.fillRect(58, 830, 6, 38);
       ctx.setFillStyle(tokens.title);
       ctx.setFontSize(32);
-      ctx.fillText('本席结构', 72, 854);
+      ctx.fillText('本席结构', 76, 858);
 
       ctx.setFillStyle(tokens.body);
       ctx.setFontSize(27);
@@ -420,20 +457,31 @@ Page({
       ];
 
       lines.forEach((line, idx) => {
-        ctx.fillText(line, 72, 914 + idx * 54);
+        ctx.fillText(line, 76, 930 + idx * 53);
       });
+
+      ctx.setStrokeStyle(tokens.panelBorder);
+      ctx.setLineWidth(1);
+      ctx.beginPath();
+      ctx.moveTo(56, 1178);
+      ctx.lineTo(694, 1178);
+      ctx.stroke();
 
       ctx.setFillStyle(tokens.accent);
       ctx.setFontSize(23);
-      this.drawWrappedText(ctx, signText, 72, 1188, 620, 34, 1);
+      this.drawWrappedText(ctx, signText, 76, 1208, 618, 34, 1);
+
+      drawRoundedRect(ctx, 30, 1242, 690, 72, 16);
+      ctx.setFillStyle(tokens.quotePanel);
+      ctx.fill();
 
       ctx.setFillStyle(tokens.title);
-      ctx.setFontSize(24);
-      this.drawWrappedText(ctx, `“${(meal.quote && meal.quote.text) || '民以食为天。'}”`, 40, 1262, 668, 34, 2);
+      ctx.setFontSize(23);
+      this.drawWrappedText(ctx, `“${(meal.quote && meal.quote.text) || '民以食为天。'}”`, 44, 1270, 580, 30, 1);
 
       ctx.setFillStyle(tokens.accent);
-      ctx.setFontSize(21);
-      ctx.fillText((meal.quote && meal.quote.from) || '《汉书》', 40, 1314);
+      ctx.setFontSize(20);
+      this.drawWrappedText(ctx, (meal.quote && meal.quote.from) || '《汉书》', 606, 1270, 100, 28, 1);
 
       ctx.draw(false, () => {
         wx.canvasToTempFilePath(

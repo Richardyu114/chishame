@@ -6,7 +6,7 @@
   height: 438rpx;
   position: relative;
   overflow: hidden;
-  border-radius: 30rpx;
+  border-radius: 32rpx;
   padding: 0;
 }
 
@@ -86,7 +86,7 @@
 .action-stack {
   display: flex;
   flex-direction: column;
-  gap: 14rpx;
+  gap: 12rpx;
 }
 
 .share-sheet-mask {
@@ -101,10 +101,10 @@
   left: 18rpx;
   right: 18rpx;
   bottom: 18rpx;
-  border-radius: 28rpx;
+  border-radius: 30rpx;
   background: #fcfbf8;
   border: 1rpx solid #e6dfce;
-  box-shadow: 0 -8rpx 28rpx rgba(0, 0, 0, 0.16);
+  box-shadow: 0 -10rpx 34rpx rgba(0, 0, 0, 0.18);
   padding: 22rpx;
   z-index: 89;
 }
@@ -123,10 +123,11 @@
 
 .copy-panel {
   margin-top: 14rpx;
-  padding: 14rpx;
-  border-radius: 18rpx;
+  padding: 16rpx;
+  border-radius: 20rpx;
   background: #f6f2e9;
   border: 1rpx solid #e4dbc9;
+  box-shadow: inset 0 0 0 1rpx rgba(255, 255, 255, 0.5);
 }
 
 .copy-panel-head {
@@ -138,6 +139,7 @@
   flex: 1;
   color: #4b4538;
   font-size: 23rpx;
+  font-weight: 600;
 }
 
 .copy-style-btn {
