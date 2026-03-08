@@ -471,17 +471,17 @@ Page({
       ctx.setFontSize(23);
       this.drawWrappedText(ctx, signText, 76, 1208, 618, 34, 1);
 
-      drawRoundedRect(ctx, 30, 1242, 690, 72, 16);
+      drawRoundedRect(ctx, 30, 1232, 690, 90, 16);
       ctx.setFillStyle(tokens.quotePanel);
       ctx.fill();
 
       ctx.setFillStyle(tokens.title);
-      ctx.setFontSize(23);
-      this.drawWrappedText(ctx, `“${(meal.quote && meal.quote.text) || '民以食为天。'}”`, 44, 1270, 580, 30, 1);
+      ctx.setFontSize(22);
+      this.drawWrappedText(ctx, `“${(meal.quote && meal.quote.text) || '民以食为天。'}”`, 44, 1258, 560, 28, 2);
 
       ctx.setFillStyle(tokens.accent);
       ctx.setFontSize(20);
-      this.drawWrappedText(ctx, (meal.quote && meal.quote.from) || '《汉书》', 606, 1270, 100, 28, 1);
+      this.drawWrappedText(ctx, (meal.quote && meal.quote.from) || '《汉书》', 596, 1288, 112, 28, 1);
 
       ctx.draw(false, () => {
         wx.canvasToTempFilePath(

@@ -45,15 +45,14 @@ const veggieWords = [
   '西兰花', '生菜', '菠菜', '白菜', '胡萝卜', '洋葱', '番茄', '青椒', '菌菇', '黄瓜', '茄子', '蔬菜'
 ];
 
-const localCoverPool = Array.from(new Set([
-  '/assets/food/dish.jpg',
-  '/assets/food/hotpot.jpg',
-  '/assets/food/noodle.jpg',
-  '/assets/food/salad.jpg',
-  '/assets/food/spicy.jpg',
-  '/assets/food/sushi.jpg',
-  ...Object.values(data.coverByTag || {})
-]));
+const relatedImageMap = {
+  '/assets/food/noodle.jpg': ['/assets/food/noodle.jpg', '/assets/food/dish.jpg'],
+  '/assets/food/sushi.jpg': ['/assets/food/sushi.jpg', '/assets/food/dish.jpg'],
+  '/assets/food/spicy.jpg': ['/assets/food/spicy.jpg', '/assets/food/hotpot.jpg', '/assets/food/dish.jpg'],
+  '/assets/food/hotpot.jpg': ['/assets/food/hotpot.jpg', '/assets/food/spicy.jpg', '/assets/food/dish.jpg'],
+  '/assets/food/salad.jpg': ['/assets/food/salad.jpg', '/assets/food/dish.jpg'],
+  '/assets/food/dish.jpg': ['/assets/food/dish.jpg']
+};
 
 function pickOne(list) {
   return list[Math.floor(Math.random() * list.length)];
@@ -143,12 +142,20 @@ function getImageCandidates(parts = [], tags = [], fallback = '/assets/food/dish
     .map((tag) => data.coverByTag[tag])
     .filter(Boolean);
 
-  return Array.from(new Set([
+  const base = Array.from(new Set([
     ...keywordImages,
     ...tagImages,
-    ...localCoverPool,
     fallback
   ].filter(Boolean)));
+
+  // 语义扩展：仅在同类图池中轮换，避免“食材与背景图不对应”。
+  const expanded = [];
+  base.forEach((img) => {
+    const related = relatedImageMap[img] || [img];
+    expanded.push(...related);
+  });
+
+  return Array.from(new Set(expanded.filter(Boolean)));
 }
 
 function pickCardImage(parts = [], tags = [], fallback = '/assets/food/dish.jpg', options = {}) {
@@ -156,9 +163,9 @@ function pickCardImage(parts = [], tags = [], fallback = '/assets/food/dish.jpg'
   const candidates = getImageCandidates(parts, tags, fallback);
   if (!candidates.length) return fallback;
 
-  const freshPool = candidates.filter((src) => !avoidImageSet.has(src));
-  const pickPool = freshPool.length ? freshPool : candidates;
-  return pickBySeed(pickPool, options.seedText || toLowerText(parts));
+  const semanticFreshPool = candidates.filter((src) => !avoidImageSet.has(src));
+  const semanticPool = semanticFreshPool.length ? semanticFreshPool : candidates;
+  return pickBySeed(semanticPool, options.seedText || toLowerText(parts));
 }
 
 function buildMealSignatureByParts(title = '', protein = '', staple = '', veggie = '') {
