@@ -1,20 +1,20 @@
 <view class="container profile-page" wx:if="{{profile}}">
   <view class="card">
-    <view class="title section-title">吃啥么设置</view>
-    <view class="subtitle section-hint">口味和忌口会直接影响推荐结果</view>
+    <view class="title section-title">荐食设定</view>
+    <view class="subtitle section-hint">风味偏好与忌口将直接影响荐食结果</view>
     <view class="subtitle drift-hint">{{flavorDriftHint}}</view>
 
-    <view class="subtitle" style="margin-top: 14rpx;">偏好口味</view>
+    <view class="subtitle" style="margin-top: 14rpx;">风味偏好</view>
     <picker mode="selector" range="{{flavorOptions}}" value="{{flavorIndex}}" bindchange="onFlavorChange">
       <view class="btn-secondary flavor-pill">{{profile.preferredFlavor}}</view>
     </picker>
 
-    <view class="subtitle" style="margin-top: 16rpx;">推荐餐别</view>
+    <view class="subtitle" style="margin-top: 16rpx;">用餐时段</view>
     <picker mode="selector" range="{{mealModeOptions}}" value="{{mealModeIndex}}" bindchange="onMealModeChange">
       <view class="btn-secondary flavor-pill">{{profile.mealMode || '智能'}}</view>
     </picker>
 
-    <view class="subtitle" style="margin-top: 18rpx;">不吃/少吃</view>
+    <view class="subtitle" style="margin-top: 18rpx;">忌口与少食</view>
     <view class="taboo-wrap">
       <block wx:for="{{tabooOptions}}" wx:key="*this">
         <text class="tag {{profile.tabooTags.includes(item) ? 'active' : ''}}" data-tag="{{item}}" bindtap="toggleTaboo">{{item}}</text>
@@ -24,17 +24,17 @@
 
   <view class="card">
     <view class="row log-head">
-      <view class="title section-title">最近记录</view>
-      <button size="mini" class="btn-secondary" bindtap="clearLogs">清空</button>
+      <view class="title section-title">近时记录</view>
+      <button size="mini" class="btn-secondary" bindtap="clearLogs">清除</button>
     </view>
 
     <block wx:if="{{logs.length === 0}}">
-      <view class="subtitle">暂无记录</view>
+      <view class="subtitle">暂未留下记录</view>
     </block>
 
     <block wx:for="{{logs}}" wx:key="ts">
       <view class="log-item">
-        <view class="log-title">{{item.mealTitle || item.placeName}} · {{item.action}}</view>
+        <view class="log-title">{{item.mealTitle || item.placeName}} · {{item.actionLabel}}</view>
         <view class="subtitle">{{item.tags ? item.tags.join('、') : ''}}</view>
       </view>
     </block>

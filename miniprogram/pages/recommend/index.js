@@ -4,10 +4,10 @@ const personalize = require('../../utils/personalize');
 
 function getTimeSlot() {
   const hour = new Date().getHours();
-  if (hour < 11) return '早餐灵感';
-  if (hour < 16) return '午餐灵感';
-  if (hour < 22) return '晚餐灵感';
-  return '夜宵灵感';
+  if (hour < 11) return '朝食时分';
+  if (hour < 16) return '午食时分';
+  if (hour < 22) return '暮食时分';
+  return '宵夜时分';
 }
 
 function safeDecode(value = '') {
@@ -36,7 +36,7 @@ Page({
     preferredFlavor: '随机',
     mealMode: '智能',
     activeMealMode: '午餐',
-    flavorDriftHint: '口味画像还在形成中，先多翻几页看看。',
+    flavorDriftHint: '风味画像尚在铺陈，可再阅数席以完善偏好。',
     selectedMealId: '',
     selectedMealTitle: ''
   },
@@ -162,15 +162,15 @@ Page({
   buildRecommendShareTitle(overrideTitle = '') {
     const selectedTitle = overrideTitle || this.data.selectedMealTitle;
     if (selectedTitle) {
-      return `我今天选了：${selectedTitle}｜吃啥么`;
+      return `今日所择：${selectedTitle}｜吃啥么`;
     }
 
     const current = this.getCurrentCard();
     if (current && current.title) {
-      return `今天吃这个：${current.title}`;
+      return `今日餐案：${current.title}`;
     }
 
-    return '吃啥么｜今天吃什么';
+    return '吃啥么｜今日饮馔';
   },
 
   buildRecommendSharePayload() {
@@ -311,7 +311,7 @@ Page({
     const nextFlavor = flavorCycle[(idx + 1 + flavorCycle.length) % flavorCycle.length];
     profile.preferredFlavor = nextFlavor;
     storage.setProfile(profile);
-    wx.showToast({ title: `口味：${nextFlavor}`, icon: 'none' });
+    wx.showToast({ title: `风味已切换：${nextFlavor}`, icon: 'none' });
     this.markActionSuccess('flavor');
     this.setData({ preferredFlavor: nextFlavor, cardsVisible: false });
     setTimeout(() => this.generateCards('flavor'), 140);
@@ -326,7 +326,7 @@ Page({
     const nextMode = mealModeCycle[(idx + 1 + mealModeCycle.length) % mealModeCycle.length];
     profile.mealMode = nextMode;
     storage.setProfile(profile);
-    wx.showToast({ title: `餐别：${nextMode}`, icon: 'none' });
+    wx.showToast({ title: `时段已切换：${nextMode}`, icon: 'none' });
     this.markActionSuccess('mode');
     this.setData({ mealMode: nextMode, cardsVisible: false });
     setTimeout(() => this.generateCards('mode'), 140);
@@ -349,7 +349,7 @@ Page({
     const randomIndex = Math.floor(Math.random() * cards.length);
     const item = cards[randomIndex];
     this.setData({ currentCardIndex: randomIndex });
-    wx.showToast({ title: '今日有口福', icon: 'none' });
+    wx.showToast({ title: '今日得佳馔', icon: 'none' });
     this.markActionSuccess('random');
     this.chooseWithItem(item, 'random');
   },
@@ -370,7 +370,7 @@ Page({
     }
 
     if (!selected) {
-      wx.showToast({ title: '先选一个“今天吃这个”', icon: 'none' });
+      wx.showToast({ title: '请先定下一席主荐', icon: 'none' });
       return;
     }
     wx.navigateTo({ url: '/pages/result/index' });
@@ -403,7 +403,7 @@ Page({
     });
 
     wx.showToast({
-      title: '已选中，可分享图片或小程序',
+      title: '已定席，可分享海报或小程序',
       icon: 'success'
     });
   }

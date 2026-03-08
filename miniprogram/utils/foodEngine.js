@@ -208,7 +208,7 @@ function buildCard(id, staple, protein, veggie, extra, quote, preferredFlavor, o
     reasons: explain(staple, protein, veggie, preferredFlavor),
     quote,
     image,
-    shareText: `今天吃这个：${title}，再配${veggie.name}。${quote.text}`
+    shareText: `今日本席：${title}，辅以${veggie.name}。${quote.text}`
   };
 }
 
@@ -491,7 +491,7 @@ function buildRemoteCard(meal, quote, preferredFlavor, index, options = {}) {
     reasons: buildRemoteReasons(tags, preferredFlavor),
     quote: safeQuote,
     image,
-    shareText: `今天吃这个：${title}（${protein} + ${staple}），再配${veggie}。${safeQuote.text}`
+    shareText: `今日本席：${title}（${protein} + ${staple}），辅以${veggie}。${safeQuote.text}`
   };
 }
 

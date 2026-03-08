@@ -11,6 +11,7 @@ page {
   background: #f7f6f2;
   color: #1f1f1f;
   font-size: 28rpx;
+  font-family: "PingFang SC", "Hiragino Sans GB", "Source Han Sans SC", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
 }
 
 .container {
@@ -30,18 +31,23 @@ page {
 .title {
   font-size: 38rpx;
   font-weight: 700;
-  letter-spacing: 0.3rpx;
+  letter-spacing: 0.8rpx;
+  font-family: "Source Han Serif SC", "Noto Serif CJK SC", "STSong", "Songti SC", serif;
 }
 
 .subtitle {
   color: #6b6b6b;
   margin-top: 8rpx;
   font-size: 24rpx;
+  line-height: 1.55;
+  letter-spacing: 0.2rpx;
 }
 
 button {
   line-height: 1.2;
   border: none;
+  font-family: "PingFang SC", "Hiragino Sans GB", "Source Han Sans SC", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
+  letter-spacing: 0.4rpx;
   transition: transform 120ms ease, filter 120ms ease, box-shadow 120ms ease, opacity 120ms ease;
 }
 

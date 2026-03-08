@@ -20,11 +20,11 @@
     "list": [
       {
         "pagePath": "pages/recommend/index",
-        "text": "吃什么"
+        "text": "荐食"
       },
       {
         "pagePath": "pages/profile/index",
-        "text": "我的"
+        "text": "设定"
       }
     ]
   },

@@ -5,6 +5,17 @@ const flavorOptions = ['随机', '清淡', '均衡', '下饭', '浓香', '辛辣
 const tabooOptions = ['海鲜', '牛肉', '豆制品', '鸡蛋', '生冷', '辛辣'];
 const mealModeOptions = ['智能', '午餐', '晚餐'];
 
+function mapActionLabel(action = '') {
+  const dict = {
+    choose: '手动定席',
+    random: '随机定席',
+    refresh: '再阅一席',
+    flavor: '更易风味',
+    mode: '切换时段'
+  };
+  return dict[action] || String(action || '');
+}
+
 Page({
   data: {
     profile: null,
@@ -14,12 +25,15 @@ Page({
     mealModeOptions,
     flavorIndex: 0,
     mealModeIndex: 0,
-    flavorDriftHint: '口味画像还在形成中，先多翻几页看看。'
+    flavorDriftHint: '风味画像尚在铺陈，可再阅数席以完善偏好。'
   },
 
   hydrateView() {
     const profile = storage.getProfile();
-    const logs = storage.getLogs().slice(0, 12);
+    const logs = storage.getLogs().slice(0, 12).map((item) => ({
+      ...item,
+      actionLabel: mapActionLabel(item.action)
+    }));
     const flavorIndex = Math.max(0, flavorOptions.indexOf(profile.preferredFlavor || '随机'));
     const mealModeIndex = Math.max(0, mealModeOptions.indexOf(profile.mealMode || '智能'));
     const drift = personalize.buildFlavorDrift(storage.getLogs());
@@ -70,8 +84,8 @@ Page({
 
   clearLogs() {
     wx.showModal({
-      title: '清空记录',
-      content: '确定清空最近的吃饭决策记录吗？',
+      title: '清除记录',
+      content: '确认清除近时的荐食记录吗？',
       success: (res) => {
         if (!res.confirm) return;
         wx.setStorageSync(storage.LOG_KEY, []);

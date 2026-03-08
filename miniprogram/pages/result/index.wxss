@@ -44,6 +44,7 @@
   margin-top: 10rpx;
   font-size: 40rpx;
   font-weight: 700;
+  font-family: "Source Han Serif SC", "Noto Serif CJK SC", "STSong", "Songti SC", serif;
 }
 
 .hero-subtitle {
@@ -112,6 +113,7 @@
   font-size: 30rpx;
   color: #1f1f1f;
   font-weight: 600;
+  font-family: "Source Han Serif SC", "Noto Serif CJK SC", "STSong", "Songti SC", serif;
 }
 
 .share-sheet-subtitle {

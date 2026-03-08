@@ -1,19 +1,19 @@
 <view class="container onboarding-page">
   <view class="card brand-card">
     <view class="title brand-title">吃啥么</view>
-    <view class="subtitle">不纠结去哪吃，先帮你定今天吃什么</view>
+    <view class="subtitle">先定今日餐案，再择门店去处</view>
   </view>
 
   <view class="card">
-    <view class="title" style="font-size: 32rpx;">口味偏好</view>
-    <view class="subtitle">先选一个默认风格，后面可随时改</view>
+    <view class="title" style="font-size: 32rpx;">风味偏好</view>
+    <view class="subtitle">先设常用风格，后续可随时修订</view>
     <picker mode="selector" range="{{flavors}}" value="{{flavorIndex}}" bindchange="onFlavorChange">
       <view class="btn-secondary picker-pill">{{flavors[flavorIndex]}}</view>
     </picker>
   </view>
 
   <view class="card">
-    <view class="title" style="font-size: 32rpx;">不吃/少吃（可选）</view>
+    <view class="title" style="font-size: 32rpx;">忌口与少食（可选）</view>
     <view style="margin-top: 16rpx;">
       <block wx:for="{{allTabooTags}}" wx:key="*this">
         <text class="tag {{tabooTags.indexOf(item) >= 0 ? 'active' : ''}}" data-tag="{{item}}" bindtap="toggleTaboo">{{item}}</text>
@@ -21,6 +21,6 @@
     </view>
   </view>
 
-  <button class="btn-primary start-btn" bindtap="saveAndStart">开始抽今天吃什么</button>
-  <view class="tiny-note">少做选择，吃得更好</view>
+  <button class="btn-primary start-btn" bindtap="saveAndStart">启用荐食</button>
+  <view class="tiny-note">择简而食，安然度日</view>
 </view>

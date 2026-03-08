@@ -3,13 +3,13 @@ const storage = require('../../utils/storage');
 const POSTER_WIDTH = 750;
 const POSTER_HEIGHT = 1334;
 const posterThemes = ['极简', '国风', '夜色'];
-const copyStyles = ['克制版', '搞笑版', '文艺版'];
+const copyStyles = ['雅正', '诙谐', '清言'];
 const todaySigns = [
-  '宜：认真吃饭，别瞎对付。',
-  '宜：补充蛋白，下午更稳。',
-  '宜：蔬菜到位，身体会感谢你。',
-  '宜：少纠结，快做决定。',
-  '宜：今天好好吃一顿。'
+  '宜：珍重三餐，毋负春秋。',
+  '宜：蛋白充足，神思更稳。',
+  '宜：蔬食得当，气血自和。',
+  '宜：少犹疑，先定其席。',
+  '宜：从容进膳，安顿身心。'
 ];
 
 function formatDate(date = new Date()) {
@@ -23,19 +23,19 @@ function getDateSeed(date = new Date()) {
   return Number(formatDate(date).replace(/\./g, ''));
 }
 
-function composeShareText(meal, style = '克制版') {
-  if (!meal) return '吃啥么｜今天吃什么';
+function composeShareText(meal, style = '雅正') {
+  if (!meal) return '吃啥么｜今日饮馔';
   const quote = (meal.quote && meal.quote.text) || '民以食为天。';
 
-  if (style === '搞笑版') {
-    return `今日胃口发布会：${meal.title}。\n配菜是${meal.veggie}，补充${meal.extra}。\n我宣布，今天不纠结了。`;
+  if (style === '诙谐') {
+    return `今日议食到此：${meal.title}。\n佐以${meal.veggie}，并添${meal.extra}。\n吾意已决，不再踌躇。`;
   }
 
-  if (style === '文艺版') {
-    return `今日餐案：${meal.title}，再配${meal.veggie}。\n${quote}\n—— 吃啥么`; 
+  if (style === '清言') {
+    return `今日餐案：${meal.title}，辅以${meal.veggie}。\n${quote}\n—— 吃啥么`; 
   }
 
-  return `今天吃这个：${meal.title}（${meal.protein} + ${meal.staple}），再配${meal.veggie}。`;
+  return `今日本席：${meal.title}（${meal.protein} + ${meal.staple}），辅以${meal.veggie}。`;
 }
 
 function getThemeTokens(theme = '极简') {
@@ -82,7 +82,7 @@ Page({
     meal: null,
     generatingPoster: false,
     posterTheme: '极简',
-    copyStyle: '克制版',
+    copyStyle: '雅正',
     sharePanelVisible: false
   },
 
@@ -96,7 +96,7 @@ Page({
     this.setData({
       meal,
       posterTheme: profile.posterTheme || '极简',
-      copyStyle: profile.shareCopyStyle || '克制版',
+      copyStyle: profile.shareCopyStyle || '雅正',
       sharePanelVisible: false
     });
     this.ensureShareMenu();
@@ -146,7 +146,7 @@ Page({
 
   openSharePanel() {
     if (!this.data.meal) {
-      wx.showToast({ title: '先选一个餐食结果', icon: 'none' });
+      wx.showToast({ title: '请先定下一席餐案', icon: 'none' });
       return;
     }
     this.ensureShareMenu();
@@ -179,7 +179,7 @@ Page({
     wx.setClipboardData({
       data: composeShareText(meal, this.data.copyStyle),
       success: () => {
-        wx.showToast({ title: '分享文案已复制', icon: 'success' });
+        wx.showToast({ title: '文案已抄录', icon: 'success' });
       }
     });
   },
@@ -189,7 +189,7 @@ Page({
     if (!meal) return;
 
     wx.showActionSheet({
-      itemList: ['生成分享图片（可选模板）', '直接分享到朋友圈（可选文案）'],
+      itemList: ['生成雅集海报（可选风格）', '发布朋友圈文案（可选体裁）'],
       success: (res) => {
         if (res.tapIndex === 0) {
           this.choosePosterThemeThenGenerate();
@@ -218,7 +218,7 @@ Page({
     wx.showActionSheet({
       itemList: copyStyles,
       success: (res) => {
-        const nextStyle = copyStyles[res.tapIndex] || '克制版';
+        const nextStyle = copyStyles[res.tapIndex] || '雅正';
         this.setData({ copyStyle: nextStyle });
         this.persistSharePreferences({ shareCopyStyle: nextStyle });
         this.shareToMomentsDirectly();
@@ -236,17 +236,17 @@ Page({
       data: shareText,
       success: () => {
         wx.showModal({
-          title: '分享到朋友圈',
-          content: `文案已复制（${this.data.copyStyle}）。\n请点击右上角“···”并选择“分享到朋友圈”。`,
-          confirmText: '知道了',
+          title: '发布朋友圈',
+          content: `文案已备妥（${this.data.copyStyle}）。\n请点右上角“···”并选择“分享到朋友圈”。`,
+          confirmText: '明白',
           showCancel: false
         });
       },
       fail: () => {
         wx.showModal({
-          title: '分享到朋友圈',
-          content: '请点击右上角“···”并选择“分享到朋友圈”。',
-          confirmText: '知道了',
+          title: '发布朋友圈',
+          content: '请点右上角“···”并选择“分享到朋友圈”。',
+          confirmText: '明白',
           showCancel: false
         });
       }
@@ -259,14 +259,14 @@ Page({
     if (!meal) return;
 
     this.setData({ generatingPoster: true });
-    wx.showLoading({ title: '正在生成图片', mask: true });
+    wx.showLoading({ title: '海报绘制中', mask: true });
 
     this.getImagePath(meal.image)
       .then((imagePath) => this.drawPoster(meal, imagePath, this.data.posterTheme))
       .then((tempPath) => this.savePosterToAlbum(tempPath))
       .catch((err) => {
         const message = err && err.message ? err.message : String(err || 'unknown error');
-        wx.showToast({ title: message.includes('auth deny') ? '需要相册权限' : '生成失败，请重试', icon: 'none' });
+        wx.showToast({ title: message.includes('auth deny') ? '需启用相册权限' : '海报生成未成，请重试', icon: 'none' });
       })
       .finally(() => {
         this.setData({ generatingPoster: false });
@@ -323,7 +323,7 @@ Page({
       ctx.fillText(dateText, 40, 632);
 
       ctx.setFontSize(46);
-      const title = meal.title || '今天吃这个';
+      const title = meal.title || '今日餐案';
       this.drawWrappedText(ctx, title, 40, 690, 670, 56, 2);
 
       // Info card
@@ -334,7 +334,7 @@ Page({
 
       ctx.setFillStyle(tokens.title);
       ctx.setFontSize(30);
-      ctx.fillText('这一餐结构', 60, 878);
+      ctx.fillText('膳食结构', 60, 878);
 
       ctx.setFillStyle(tokens.body);
       ctx.setFontSize(26);
@@ -418,9 +418,9 @@ Page({
         filePath: tempFilePath,
         success: () => {
           wx.showModal({
-            title: '图片已保存',
-            content: `已保存到相册（${this.data.posterTheme}模板），可直接去朋友圈发图。`,
-            confirmText: '去发朋友圈',
+            title: '海报已存入相册',
+            content: `已存为「${this.data.posterTheme}」风格海报，可前往朋友圈发布。`,
+            confirmText: '前往发布',
             cancelText: '稍后',
             success: () => resolve()
           });
@@ -428,9 +428,9 @@ Page({
         fail: (err) => {
           if (err && String(err.errMsg || '').includes('auth deny')) {
             wx.showModal({
-              title: '需要相册权限',
-              content: '请在设置中开启“保存到相册”权限后重试。',
-              confirmText: '去设置',
+              title: '需启用相册权限',
+              content: '请在设置中开启“保存到相册”权限后再试。',
+              confirmText: '前往设置',
               success: (res) => {
                 if (res.confirm) {
                   wx.openSetting({ success: () => reject(err), fail: () => reject(err) });

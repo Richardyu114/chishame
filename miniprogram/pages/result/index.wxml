@@ -3,14 +3,14 @@
     <image class="cover" src="{{meal.image}}" mode="aspectFill"></image>
     <view class="mask"></view>
     <view class="hero-content">
-      <view class="hero-badge">今日定案</view>
+      <view class="hero-badge">今日餐案</view>
       <view class="meal-title">{{meal.title}}</view>
       <view class="subtitle hero-subtitle">{{meal.dishLine}}</view>
     </view>
   </view>
 
   <view class="card">
-    <view class="title section-title">这一餐结构</view>
+    <view class="title section-title">膳食结构</view>
     <view class="info-row">
       <view class="info-key">主食</view>
       <view class="info-value">{{meal.staple}}</view>
@@ -34,31 +34,31 @@
   </view>
 
   <view class="card">
-    <view class="title section-title">今日语录</view>
+    <view class="title section-title">今日诗文</view>
     <view class="quote">“{{meal.quote.text}}”</view>
     <view class="subtitle">—— {{meal.quote.from}}</view>
   </view>
 
   <view class="card share-meta-card">
-    <view class="subtitle">海报模板：{{posterTheme}} · 文案风格：{{copyStyle}}</view>
-    <view class="subtitle" style="margin-top: 6rpx;">支持“分享图片（海报）”与“转发小程序卡片”。</view>
+    <view class="subtitle">海报风格：{{posterTheme}} · 文案体裁：{{copyStyle}}</view>
+    <view class="subtitle" style="margin-top: 6rpx;">可选“雅集海报”与“小程序名片”两种路径。</view>
   </view>
 
   <view class="action-stack">
-    <button class="btn-primary" bindtap="openSharePanel">一键分享菜单</button>
-    <button class="btn-secondary" bindtap="pickAgain">再翻一页</button>
-    <button class="btn-secondary" bindtap="toRecommend">回推荐页</button>
+    <button class="btn-primary" bindtap="openSharePanel">分享选项</button>
+    <button class="btn-secondary" bindtap="pickAgain">再荐一席</button>
+    <button class="btn-secondary" bindtap="toRecommend">返回荐食页</button>
   </view>
 
   <view wx:if="{{sharePanelVisible}}" class="share-sheet-mask" bindtap="closeSharePanel"></view>
   <view wx:if="{{sharePanelVisible}}" class="share-sheet">
-    <view class="share-sheet-title">选择分享方式</view>
-    <view class="share-sheet-subtitle">支持海报、小程序卡片、朋友圈文案</view>
-    <button class="btn-primary" bindtap="choosePosterThemeThenGenerate" loading="{{generatingPoster}}" disabled="{{generatingPoster}}">{{generatingPoster ? '海报生成中...' : '分享图片（海报）'}}</button>
-    <button class="btn-secondary" open-type="share" bindtap="onTapShareMiniProgram">转发小程序卡片</button>
-    <button class="btn-secondary" bindtap="chooseCopyStyleThenShare">朋友圈文案分享</button>
-    <button class="btn-secondary" bindtap="copyShareText">复制分享文案</button>
-    <button class="btn-secondary" bindtap="closeSharePanel">取消</button>
+    <view class="share-sheet-title">请选择分享体例</view>
+    <view class="share-sheet-subtitle">可选海报、小程序名片与朋友圈文案</view>
+    <button class="btn-primary" bindtap="choosePosterThemeThenGenerate" loading="{{generatingPoster}}" disabled="{{generatingPoster}}">{{generatingPoster ? '海报绘制中...' : '分享雅集海报'}}</button>
+    <button class="btn-secondary" open-type="share" bindtap="onTapShareMiniProgram">转发小程序名片</button>
+    <button class="btn-secondary" bindtap="chooseCopyStyleThenShare">发布朋友圈文案</button>
+    <button class="btn-secondary" bindtap="copyShareText">抄录分享文案</button>
+    <button class="btn-secondary" bindtap="closeSharePanel">收起</button>
   </view>
 
   <canvas canvas-id="sharePosterCanvas" class="poster-canvas"></canvas>
@@ -66,7 +66,7 @@
 
 <view class="container" wx:else>
   <view class="card">
-    <view class="subtitle">还没有选择结果，先去推荐页看看～</view>
+    <view class="subtitle">尚未生成餐案，请先前往荐食页。</view>
   </view>
-  <button class="btn-primary" bindtap="toRecommend">去推荐页</button>
+  <button class="btn-primary" bindtap="toRecommend">前往荐食页</button>
 </view>

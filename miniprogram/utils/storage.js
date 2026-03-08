@@ -10,7 +10,7 @@ const defaultProfile = {
   tabooTags: [],
   quoteStyle: '经典',
   mealMode: '智能',
-  shareCopyStyle: '克制版',
+  shareCopyStyle: '雅正',
   posterTheme: '极简',
   useRemote: true,
   tasteWeights: {
@@ -84,6 +84,11 @@ function normalizeProfile(profile = {}) {
   if (!merged.preferredFlavor) {
     merged.preferredFlavor = '随机';
   }
+
+  // 分享文案体裁迁移（旧值 -> 新值）
+  if (merged.shareCopyStyle === '克制版') merged.shareCopyStyle = '雅正';
+  if (merged.shareCopyStyle === '搞笑版') merged.shareCopyStyle = '诙谐';
+  if (merged.shareCopyStyle === '文艺版') merged.shareCopyStyle = '清言';
 
   // v0.8 起固定网络优先：旧版本遗留的 false 统一迁移为 true。
   merged.useRemote = true;

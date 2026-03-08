@@ -28,7 +28,7 @@ function buildFlavorDrift(logs = []) {
   if (!topTag || topCount <= 0 || total < 4) {
     return {
       topTag: '',
-      text: '口味画像还在形成中，先多翻几页看看。'
+      text: '风味画像尚在铺陈，可再阅数席以完善偏好。'
     };
   }
 
@@ -36,13 +36,13 @@ function buildFlavorDrift(logs = []) {
   if (ratio >= 0.45) {
     return {
       topTag,
-      text: `最近明显偏${topTag}，推荐会优先贴近这类风味。`
+      text: `近来偏好明显趋向${topTag}，荐食将优先贴近此味。`
     };
   }
 
   return {
     topTag,
-    text: `最近轻微偏${topTag}，整体口味仍然比较均衡。`
+    text: `近来略偏${topTag}，整体风味仍属均衡。`
   };
 }
 
