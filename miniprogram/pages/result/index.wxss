@@ -165,8 +165,8 @@
   position: fixed;
   left: -3000rpx;
   top: -3000rpx;
-  width: 750px;
-  height: 1334px;
+  width: 1500px;
+  height: 2668px;
   opacity: 0;
   pointer-events: none;
 }

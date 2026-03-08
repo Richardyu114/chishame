@@ -3,6 +3,8 @@ const storage = require('../../utils/storage');
 const POSTER_WIDTH = 750;
 const POSTER_HEIGHT = 1334;
 const POSTER_SCALE = 2;
+const POSTER_CANVAS_WIDTH = POSTER_WIDTH * POSTER_SCALE;
+const POSTER_CANVAS_HEIGHT = POSTER_HEIGHT * POSTER_SCALE;
 const posterThemes = ['极简', '国风', '夜色'];
 const copyStyles = ['雅正', '诙谐', '清言'];
 const todaySigns = [
@@ -368,6 +370,9 @@ Page({
       const signText = this.buildTodaySign(meal);
       const coverHeight = 760;
 
+      // 以 2x 画布绘制，避免导出海报文字与线条发虚。
+      ctx.scale(POSTER_SCALE, POSTER_SCALE);
+
       ctx.setFillStyle(tokens.bg);
       ctx.fillRect(0, 0, POSTER_WIDTH, POSTER_HEIGHT);
 
@@ -436,10 +441,10 @@ Page({
             canvasId: 'sharePosterCanvas',
             x: 0,
             y: 0,
-            width: POSTER_WIDTH,
-            height: POSTER_HEIGHT,
-            destWidth: POSTER_WIDTH * POSTER_SCALE,
-            destHeight: POSTER_HEIGHT * POSTER_SCALE,
+            width: POSTER_CANVAS_WIDTH,
+            height: POSTER_CANVAS_HEIGHT,
+            destWidth: POSTER_CANVAS_WIDTH,
+            destHeight: POSTER_CANVAS_HEIGHT,
             fileType: 'png',
             quality: 1,
             success: (res) => resolve(res.tempFilePath),
