@@ -51,8 +51,8 @@ const relatedImageMap = {
   '/assets/food/sushi.jpg': ['/assets/food/sushi.jpg', '/assets/food/dish.jpg'],
   '/assets/food/spicy.jpg': ['/assets/food/spicy.jpg', '/assets/food/hotpot.jpg', '/assets/food/dish.jpg'],
   '/assets/food/hotpot.jpg': ['/assets/food/hotpot.jpg', '/assets/food/spicy.jpg', '/assets/food/dish.jpg'],
-  '/assets/food/salad.jpg': ['/assets/food/salad.jpg', '/assets/food/dish.jpg', '/assets/food/sushi.jpg'],
-  '/assets/food/dish.jpg': ['/assets/food/dish.jpg', '/assets/food/noodle.jpg', '/assets/food/salad.jpg']
+  '/assets/food/salad.jpg': ['/assets/food/salad.jpg', '/assets/food/dish.jpg'],
+  '/assets/food/dish.jpg': ['/assets/food/dish.jpg', '/assets/food/noodle.jpg', '/assets/food/hotpot.jpg', '/assets/food/salad.jpg']
 };
 
 const tagImagePool = {
@@ -155,26 +155,27 @@ function getImageCandidates(parts = [], tags = [], fallback = '/assets/food/dish
     .flatMap((tag) => tagImagePool[tag] || [data.coverByTag[tag]])
     .filter(Boolean);
 
-  const base = Array.from(new Set([
-    ...keywordImages,
-    ...tagImages,
-    fallback
-  ].filter(Boolean)));
+  // 先用关键词命中的语义图；没有命中再用标签图；最后兜底。
+  const base = keywordImages.length
+    ? Array.from(new Set(keywordImages))
+    : tagImages.length
+      ? Array.from(new Set(tagImages))
+      : [fallback];
 
-  // 语义扩展：仅在同类图池中轮换，避免“食材与背景图不对应”。
   const expanded = [];
   base.forEach((img) => {
     const related = relatedImageMap[img] || [img];
     expanded.push(...related);
   });
 
-  // 若语义池过小，补入同标签池，减少“背景单一”体感。
   const semanticPool = Array.from(new Set(expanded.filter(Boolean)));
+
+  // 若语义池过小，在同标签图内补足，不跨语义大类。
   if (semanticPool.length >= 3) return semanticPool;
 
-  const backupFromTags = tags
-    .flatMap((tag) => tagImagePool[tag] || [])
-    .filter(Boolean);
+  const backupFromTags = tagImages.length
+    ? tagImages
+    : [fallback];
 
   return Array.from(new Set([
     ...semanticPool,

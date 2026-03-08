@@ -15,6 +15,18 @@ const todaySigns = [
   '宜：从容进膳，安顿身心。'
 ];
 
+const posterFallbackByTag = {
+  清淡: '/assets/food/salad.jpg',
+  均衡: '/assets/food/dish.jpg',
+  下饭: '/assets/food/hotpot.jpg',
+  浓香: '/assets/food/hotpot.jpg',
+  辛辣: '/assets/food/spicy.jpg',
+  面食: '/assets/food/noodle.jpg',
+  轻食: '/assets/food/salad.jpg',
+  鲜香: '/assets/food/sushi.jpg',
+  日常: '/assets/food/dish.jpg'
+};
+
 function formatDate(date = new Date()) {
   const y = date.getFullYear();
   const m = `${date.getMonth() + 1}`.padStart(2, '0');
@@ -120,6 +132,15 @@ function drawRoundedRect(ctx, x, y, width, height, radius = 16) {
   ctx.lineTo(x, y + r);
   ctx.arc(x + r, y + r, r, Math.PI, Math.PI * 1.5);
   ctx.closePath();
+}
+
+function pickPosterFallback(meal = {}) {
+  const tags = Array.isArray(meal.tags) ? meal.tags : [];
+  for (let i = 0; i < tags.length; i += 1) {
+    const found = posterFallbackByTag[tags[i]];
+    if (found) return found;
+  }
+  return '/assets/food/dish.jpg';
 }
 
 Page({
@@ -349,7 +370,7 @@ Page({
     this.setData({ generatingPoster: true });
     wx.showLoading({ title: '海报绘制中', mask: true });
 
-    this.getImageAsset(meal.image)
+    this.getImageAsset(meal.image, meal)
       .then((imageAsset) => this.drawPoster(meal, imageAsset, this.data.posterTheme))
       .then((tempPath) => this.savePosterToAlbum(tempPath))
       .catch((err) => {
@@ -362,18 +383,41 @@ Page({
       });
   },
 
-  getImageAsset(src) {
+  getImageAsset(src, meal = {}) {
     return new Promise((resolve) => {
-      const fallback = '/assets/food/dish.jpg';
+      const fallback = pickPosterFallback(meal);
       const target = src || fallback;
 
       wx.getImageInfo({
         src: target,
-        success: (res) => resolve({
-          path: res.path || target,
-          width: Number(res.width || 0),
-          height: Number(res.height || 0)
-        }),
+        success: (res) => {
+          const width = Number(res.width || 0);
+          const height = Number(res.height || 0);
+          const lowResRemote = /^https?:\/\//.test(target) && (width < 900 || height < 900);
+
+          if (!lowResRemote) {
+            resolve({
+              path: res.path || target,
+              width,
+              height
+            });
+            return;
+          }
+
+          wx.getImageInfo({
+            src: fallback,
+            success: (fallbackRes) => resolve({
+              path: fallbackRes.path || fallback,
+              width: Number(fallbackRes.width || 0),
+              height: Number(fallbackRes.height || 0)
+            }),
+            fail: () => resolve({
+              path: res.path || target,
+              width,
+              height
+            })
+          });
+        },
         fail: () => resolve({
           path: fallback,
           width: 0,
@@ -427,7 +471,10 @@ Page({
       const ctx = wx.createCanvasContext('sharePosterCanvas', this);
       const dateText = formatDate(new Date());
       const signText = this.buildTodaySign(meal);
-      const coverHeight = 778;
+      const coverX = 24;
+      const coverY = 24;
+      const coverWidth = POSTER_WIDTH - 48;
+      const coverHeight = 760;
 
       // 以 2x 画布绘制，避免导出海报文字与线条发虚。
       ctx.scale(POSTER_SCALE, POSTER_SCALE);
@@ -435,36 +482,45 @@ Page({
       ctx.setFillStyle(tokens.bg);
       ctx.fillRect(0, 0, POSTER_WIDTH, POSTER_HEIGHT);
 
-      this.drawCoverImage(ctx, imageAsset, 0, 0, POSTER_WIDTH, coverHeight);
-      ctx.setFillStyle(tokens.ribbonBg);
-      ctx.fillRect(0, 0, POSTER_WIDTH, 130);
+      // 封面区：圆角裁切 + 底部渐暗，避免拉伸与边缘生硬。
+      ctx.save();
+      drawRoundedRect(ctx, coverX, coverY, coverWidth, coverHeight, 30);
+      ctx.clip();
+      this.drawCoverImage(ctx, imageAsset, coverX, coverY, coverWidth, coverHeight);
       ctx.setFillStyle(tokens.overlay);
-      ctx.fillRect(0, 420, POSTER_WIDTH, 358);
+      ctx.fillRect(coverX, 430, coverWidth, 354);
+      ctx.restore();
 
-      ctx.setStrokeStyle('rgba(255,255,255,0.24)');
-      ctx.setLineWidth(1.4);
-      ctx.strokeRect(18, 18, POSTER_WIDTH - 36, POSTER_HEIGHT - 36);
+      drawRoundedRect(ctx, coverX, coverY, coverWidth, 130, 30);
+      ctx.setFillStyle(tokens.ribbonBg);
+      ctx.fill();
+
+      ctx.setStrokeStyle('rgba(255,255,255,0.22)');
+      ctx.setLineWidth(1.2);
+      drawRoundedRect(ctx, 18, 18, POSTER_WIDTH - 36, POSTER_HEIGHT - 36, 34);
+      ctx.stroke();
 
       ctx.setFillStyle(tokens.heroText);
-      ctx.setFontSize(31);
+      ctx.setFontSize(30);
       ctx.fillText('吃啥么', 44, 78);
-      ctx.setFontSize(21);
+      ctx.setFontSize(20);
       ctx.fillText(dateText, 44, 112);
 
-      drawRoundedRect(ctx, 618, 46, 90, 34, 17);
-      ctx.setFillStyle('rgba(255,255,255,0.20)');
+      drawRoundedRect(ctx, 618, 44, 92, 34, 17);
+      ctx.setFillStyle('rgba(255,255,255,0.22)');
       ctx.fill();
       ctx.setFillStyle(tokens.heroText);
       ctx.setFontSize(20);
-      ctx.fillText(theme, 646, 69);
+      ctx.fillText(theme, 646, 67);
 
       const title = meal.title || '今日餐案';
-      ctx.setFontSize(54);
-      this.drawWrappedText(ctx, title, 44, 620, 662, 64, 2);
+      const titleSize = title.length > 16 ? 44 : title.length > 12 ? 50 : 54;
+      ctx.setFontSize(titleSize);
+      this.drawWrappedText(ctx, title, 46, 620, 658, titleSize + 10, 2);
 
-      ctx.setFontSize(24);
+      ctx.setFontSize(23);
       ctx.setFillStyle('rgba(255, 255, 255, 0.92)');
-      this.drawWrappedText(ctx, meal.dishLine || '', 44, 722, 662, 34, 1);
+      this.drawWrappedText(ctx, meal.dishLine || '', 46, 722, 658, 32, 1);
 
       drawRoundedRect(ctx, 30, 804, 690, 418, 24);
       ctx.setFillStyle(tokens.panel);
@@ -474,15 +530,17 @@ Page({
       ctx.stroke();
 
       ctx.setFillStyle(tokens.panelSoft);
-      ctx.fillRect(30, 804, 690, 88);
+      drawRoundedRect(ctx, 30, 804, 690, 88, 24);
+      ctx.fill();
+
       ctx.setFillStyle(tokens.accent);
       ctx.fillRect(58, 830, 6, 38);
       ctx.setFillStyle(tokens.title);
-      ctx.setFontSize(32);
+      ctx.setFontSize(31);
       ctx.fillText('本席结构', 76, 858);
 
       ctx.setFillStyle(tokens.body);
-      ctx.setFontSize(27);
+      ctx.setFontSize(26);
       const lines = [
         `主食：${meal.staple || '-'}`,
         `蛋白：${meal.protein || '-'}`,
@@ -492,7 +550,7 @@ Page({
       ];
 
       lines.forEach((line, idx) => {
-        ctx.fillText(line, 76, 930 + idx * 53);
+        ctx.fillText(line, 76, 928 + idx * 53);
       });
 
       ctx.setStrokeStyle(tokens.panelBorder);
@@ -503,20 +561,20 @@ Page({
       ctx.stroke();
 
       ctx.setFillStyle(tokens.accent);
-      ctx.setFontSize(23);
-      this.drawWrappedText(ctx, signText, 76, 1208, 618, 34, 1);
+      ctx.setFontSize(22);
+      this.drawWrappedText(ctx, signText, 76, 1208, 618, 32, 1);
 
       drawRoundedRect(ctx, 30, 1232, 690, 90, 16);
       ctx.setFillStyle(tokens.quotePanel);
       ctx.fill();
 
       ctx.setFillStyle(tokens.title);
-      ctx.setFontSize(22);
-      this.drawWrappedText(ctx, `“${(meal.quote && meal.quote.text) || '民以食为天。'}”`, 44, 1258, 560, 28, 2);
+      ctx.setFontSize(21);
+      this.drawWrappedText(ctx, `“${(meal.quote && meal.quote.text) || '民以食为天。'}”`, 44, 1258, 566, 26, 2);
 
       ctx.setFillStyle(tokens.accent);
-      ctx.setFontSize(20);
-      this.drawWrappedText(ctx, (meal.quote && meal.quote.from) || '《汉书》', 596, 1288, 112, 28, 1);
+      ctx.setFontSize(19);
+      this.drawWrappedText(ctx, (meal.quote && meal.quote.from) || '《汉书》', 596, 1288, 112, 26, 1);
 
       ctx.draw(false, () => {
         wx.canvasToTempFilePath(
